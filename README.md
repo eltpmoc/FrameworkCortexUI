@@ -2,17 +2,31 @@
 
 > Framework de Componentes Web Nativos (Custom Elements & Shadow DOM), Suíte Enterprise Completa, Editores Visuais e Sistema Dinâmico de 12 Temas Retrô, Modernos e Futuristas.
 
-![CortexUI Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Vanilla Web Components](https://img.shields.io/badge/tech-Web%20Components%20%7C%20ES%20Modules-green.svg)
-![12 Themes Supported](https://img.shields.io/badge/themes-12%20Active%20Themes-purple.svg)
-![Zero Heavy Dependencies](https://img.shields.io/badge/dependencies-0%20(Pure%20Vanilla)-orange.svg)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Live Site](https://img.shields.io/badge/Demo%20Live-eltpmoc.github.io%2FFrameworkCortexUI-success?style=for-the-badge&logo=github)](https://eltpmoc.github.io/FrameworkCortexUI/)
+[![Interactive Docs](https://img.shields.io/badge/Interactive%20Docs-Docs%20%26%20Showcase-blue?style=for-the-badge&logo=bookstack)](https://eltpmoc.github.io/FrameworkCortexUI/docs.html)
+
+[![CortexUI Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/eltpmoc/FrameworkCortexUI)
+[![Vanilla Web Components](https://img.shields.io/badge/tech-Web%20Components%20%7C%20ES%20Modules-green.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
+[![12 Themes Supported](https://img.shields.io/badge/themes-12%20Active%20Themes-purple.svg)](https://eltpmoc.github.io/FrameworkCortexUI/docs.html)
+[![Zero Heavy Dependencies](https://img.shields.io/badge/dependencies-0%20(Pure%20Vanilla)-orange.svg)](https://github.com/eltpmoc/FrameworkCortexUI)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## 🌐 Demonstração Online (GitHub Pages)
+
+Experimente o **CortexUI** diretamente no seu navegador, sem precisar instalar nada:
+
+* 🚀 **Desktop Shell & Aplicação Ao Vivo**: [https://eltpmoc.github.io/FrameworkCortexUI/](https://eltpmoc.github.io/FrameworkCortexUI/)
+* 📚 **Showcase Interativo & Catálogo de Componentes**: [https://eltpmoc.github.io/FrameworkCortexUI/docs.html](https://eltpmoc.github.io/FrameworkCortexUI/docs.html)
+
+> 💡 **Dica no Shell**: Pressione `F1` ou clique no botão **📖 Docs** na barra de menus para abrir a documentação interativa com alternador de temas dinâmico!
 
 ---
 
 ## 🌟 Visão Geral
 
-O **CortexUI** é um framework moderno e autossuficiente para desenvolvimento de aplicações web corporativas de alto desempenho e ricas em recursos gráficos e de produtividade desktop. Desenvolvido 100% sobre padrões abertos da web (**Web Components**, **Custom Elements**, **Shadow DOM**, **CSS Custom Properties** e **ES Modules**), o CortexUI opera diretamente no navegador com **zero dependências pesadas de terceiros**.
+O **CortexUI** é um framework moderno e autossuficiente para desenvolvimento de aplicações web corporativas de alto desempenho e ricas em recursos gráficos e de produtividade desktop. Desenvolvido 100% sobre padrões abertos da web (**Web Components**, **Custom Elements**, **Shadow DOM**, **CSS Custom Properties** e **ES Modules**), o CortexUI opera diretamente no navegador com **zero dependências externas**.
 
 ---
 
@@ -105,8 +119,22 @@ npx serve -l 3000 .
 ```
 
 3. Abra no navegador:
-- Demonstração Interativa completa: **`http://localhost:3000/docs`**
-- Aplicação Desktop Shell: **`http://localhost:3000/index.html`**
+- Aplicação Desktop Shell: **`http://localhost:3000/`**
+- Demonstração Interativa completa: **`http://localhost:3000/docs.html`**
+
+---
+
+## ⚙️ Como Ativar o GitHub Pages no seu Repositório
+
+Para ativar o site ao vivo no seu GitHub:
+
+1. Acesse o seu repositório: [https://github.com/eltpmoc/FrameworkCortexUI](https://github.com/eltpmoc/FrameworkCortexUI)
+2. Clique na aba **Settings** (Configurações) no topo.
+3. No menu lateral esquerdo, clique em **Pages**.
+4. Em **Build and deployment > Source**, selecione **Deploy from a branch**.
+5. Em **Branch**, selecione **`main`** e a pasta **`/(root)`**, e clique em **Save**.
+6. Em cerca de 1 a 2 minutos, seu site estará no ar em:
+   👉 **`https://eltpmoc.github.io/FrameworkCortexUI/`**
 
 ---
 

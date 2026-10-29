@@ -411,160 +411,72 @@ export class CortexMenubar extends CortexElement {
       <style>
         ${this.baseStyles}
         :host {
-          display: grid;
-          grid-template-columns: auto minmax(0, 1fr) auto;
-          grid-auto-flow: column;
-          align-items: center;
-          height: var(--menubar-height, 30px);
-          min-height: var(--menubar-height, 30px);
-          max-height: var(--menubar-height, 30px);
-          background-color: var(--bg-panel, #252526);
-          border-bottom: 1px solid var(--border-subtle, #333337);
-          padding: 0 8px;
-          font-size: var(--text-xs, 12px);
-          position: relative;
-          box-sizing: border-box;
-          overflow: visible;
+          display: block !important;
+          width: 100% !important;
+          height: var(--menubar-height, 30px) !important;
+          min-height: var(--menubar-height, 30px) !important;
+          max-height: var(--menubar-height, 30px) !important;
+          background-color: var(--bg-panel, #252526) !important;
+          border-bottom: 1px solid var(--border-subtle, #333337) !important;
+          box-sizing: border-box !important;
+          position: relative !important;
+          z-index: 1000 !important;
+        }
+
+        .menubar-bar {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          width: 100% !important;
+          height: 100% !important;
+          padding: 0 10px !important;
+          box-sizing: border-box !important;
+          position: relative !important;
         }
 
         .left-zone {
-          display: flex;
-          align-items: center;
-          gap: 2px;
-          white-space: nowrap;
-          flex-shrink: 0;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 2px !important;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
         }
 
-        /* Ícone da Aplicação Desktop (ex: "Id", "Cx", etc.) */
-        .app-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 20px;
-          height: 20px;
-          border-radius: 3px;
-          background-color: #2c1320;
-          border: 1px solid #f43f5e;
-          color: #fb7185;
-          font-weight: 700;
-          font-size: 11px;
-          margin-right: 6px;
-          letter-spacing: -0.03em;
-          flex-shrink: 0;
-        }
-
-        .menu-list {
-          display: flex;
-          align-items: center;
-          list-style: none;
-          margin: 0;
-          padding: 0;
-          gap: 1px;
-        }
-
-        .menu-root-item {
-          position: relative;
-        }
-
-        .menu-trigger {
-          padding: 4px 8px;
-          border-radius: var(--radius-xs);
-          color: var(--text-primary);
-          font-size: var(--text-xs);
-          transition: background var(--transition-fast);
-        }
-
-        .menu-trigger:hover {
-          background-color: var(--bg-hover);
-        }
-
-        .menu-root-item.open .menu-trigger {
-          background-color: var(--accent-blue);
-          color: #ffffff;
-        }
-
-        /* Menu Suspenso (Dropdown Desktop Fiel à Referência — sobrepõe todas as janelas internas) */
-        .dropdown {
-          display: none;
-          position: absolute;
-          top: calc(100% + 2px);
-          left: 0;
-          min-width: 215px;
-          background-color: var(--bg-panel);
-          border: 1px solid var(--border-input);
-          border-radius: var(--radius-sm);
-          box-shadow: var(--shadow-dropdown);
-          padding: 4px 0;
-          list-style: none;
-          margin: 0;
-          z-index: 8500;
-        }
-
-        .menu-root-item.open .dropdown {
-          display: block;
-        }
-
-        .dropdown-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-          padding: 6px 14px;
-          color: var(--text-primary);
-          font-size: var(--text-xs);
-          text-align: left;
-        }
-
-        .dropdown-item:hover {
-          background-color: var(--accent-blue);
-          color: #ffffff;
-        }
-
-        .shortcut {
-          font-family: var(--font-sans);
-          font-size: 11px;
-          color: var(--text-muted);
-          margin-left: 24px;
-        }
-
-        .dropdown-item:hover .shortcut {
-          color: rgba(255, 255, 255, 0.9);
-        }
-
-        .divider {
-          height: 1px;
-          background-color: var(--border-subtle);
-          margin: 4px 0;
-        }
-
-        /* Centro: Título da Janela/Documento */
         .window-title {
-          color: #d1d5db;
-          font-size: 11.5px;
-          font-weight: 600;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          text-align: center;
-          justify-self: center;
-          pointer-events: none;
-          max-width: 440px;
-          padding: 2px 14px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-          letter-spacing: 0.2px;
+          position: absolute !important;
+          left: 50% !important;
+          top: 50% !important;
+          transform: translate(-50%, -50%) !important;
+          color: #d1d5db !important;
+          font-size: 11.5px !important;
+          font-weight: 600 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          text-align: center !important;
+          pointer-events: none !important;
+          max-width: 45vw !important;
+          padding: 2px 14px !important;
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+          letter-spacing: 0.2px !important;
+          z-index: 10 !important;
         }
 
-        /* Direita: Seletor de Workspace ("Essentials") + Barra de Busca */
         .right-zone {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 6px;
-          white-space: nowrap;
-          flex-shrink: 0;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          gap: 6px !important;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+          margin-left: auto !important;
+          z-index: 20 !important;
         }
 
         .workspace-select {
@@ -684,6 +596,7 @@ export class CortexMenubar extends CortexElement {
         }
       </style>
 
+      <header class="menubar-bar">
       <!-- Esquerda: App Icon + Barra de Menus -->
       <div class="left-zone">
         <button class="hamburger-btn" aria-label="Menu">
@@ -788,6 +701,7 @@ export class CortexMenubar extends CortexElement {
           <span class="search-icon">&#128269;</span>
         </label>` : ''}
       </div>
+      </header>
 
       <!-- Gaveta Mobile (Off-Canvas) -->
       <div class="mobile-backdrop"></div>

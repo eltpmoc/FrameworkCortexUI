@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CortexUI — Desktop Application Framework for Web</title>
+  <link rel="stylesheet" href="./src/styles/theme.css" />
+</head>
+<body>
+  <!-- Casca Desktop Universal CortexUI -->
+  <div class="cortex-shell">
+    <cortex-menubar app-badge="Id" app-name="DesignCraft"></cortex-menubar>
+    <cortex-tabbar></cortex-tabbar>
+    <cortex-toolbar></cortex-toolbar>
+
+    <!-- Motor Gráfico Canvas 2D, Réguas Dinâmicas e Hit Detection -->
+    <cortex-workspace></cortex-workspace>
+
+    <cortex-inspector></cortex-inspector>
+    <cortex-statusbar></cortex-statusbar>
+  </div>
+
+  <!-- Componentes Globais de Aplicação Desktop -->
+  <cortex-docs></cortex-docs>
+  <cortex-context-menu></cortex-context-menu>
+  <cortex-command-palette></cortex-command-palette>
+  <cortex-floating-window></cortex-floating-window>
+  <cortex-login></cortex-login>
+  <cortex-modal></cortex-modal>
+
+  <script type="module" src="./src/index.js"></script>
+</body>
+</html>

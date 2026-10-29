@@ -1,0 +1,962 @@
+/* src/styles/theme.css */
+
+/* =========================================================================
+   1. TEMA PADRÃO: CORTEX DARK PRO (Adobe Spectrum Dark / VS Code Dark+)
+   ========================================================================= */
+:root,
+:root[data-theme="dark"] {
+  --bg-app: #18181b;             /* Fundo geral da janela */
+  --bg-workspace: #323234;       /* Pasteboard / área central de trabalho */
+  --bg-workspace-frame: #3e3e42; /* Moldura ao redor da folha no Canvas */
+  --bg-panel: #252526;           /* Barra de menus, toolbar, inspector, statusbar */
+  --bg-panel-header: #1f1f22;    /* Barra de abas de documento e cabeçalhos */
+  --bg-tab-active: #323234;      /* Aba de documento ativa */
+  --bg-input: #1b1b1d;           /* Fundo de inputs, selects e search */
+  --bg-elevated: #2a2a2d;        /* Dropdowns, botões secundários e modais */
+  --bg-hover: #37373d;           /* Hover neutro em controles */
+  --bg-active: #45454d;
+  --bg-backdrop: rgba(0, 0, 0, 0.62);
+  --bg-login-stage:
+    radial-gradient(circle at 20% 20%, rgba(20, 115, 230, 0.14), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08), transparent 50%),
+    #121215;
+
+  /* Bordas e Divisores */
+  --border-subtle: #333337;
+  --border-strong: #141416;
+  --border-input: #3c3c42;
+  --border-focus: #1473e6;
+
+  /* Tipografia e Cores de Texto */
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* Cores de Destaque (Desktop Accent) */
+  --accent-blue: #1473e6;
+  --accent-blue-hover: #0d66d0;
+  --accent-blue-alpha: rgba(20, 115, 230, 0.22);
+  --accent-text: #60a5fa;
+
+  /* Cores de Cabeçalho de Janelas / Modais, Statusbar e Bevels */
+  --win-header-bg: var(--bg-panel-header);
+  --win-header-text: var(--text-primary);
+  --statusbar-bg: var(--bg-panel);
+  --statusbar-text: var(--text-secondary);
+  --btn-bevel-shadow: none;
+  --input-bevel-shadow: none;
+  --panel-bevel-shadow: none;
+
+  /* Réguas e Scrollbars */
+  --ruler-bg: #252526;
+  --ruler-border: #333337;
+  --ruler-tick: #6e6e77;
+  --ruler-text: #9ca3af;
+  --scrollbar-track: #1b1b1d;
+  --scrollbar-thumb: #3f3f46;
+  --scrollbar-thumb-hover: #52525b;
+
+  /* Banners de Erro de Login */
+  --err-access-bg: rgba(239, 68, 68, 0.14);
+  --err-access-text: #fecaca;
+  --err-app-bg: rgba(245, 158, 11, 0.14);
+  --err-app-text: #fde68a;
+  --err-title-text: #ffffff;
+
+  /* Indicadores de Status */
+  --status-ok: #22c55e;
+  --status-cyan: #06b6d4;
+  --status-warn: #f59e0b;
+  --status-error: #ef4444;
+  --guide-magenta: #ec4899;
+
+  /* Tipografia Fluída de Alta Densidade (Desktop UI) */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+
+  --text-xs: clamp(0.6875rem, 0.66rem + 0.1vw, 0.75rem);   /* ~11px - 12px */
+  --text-sm: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);  /* ~12px - 13px */
+  --text-base: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
+  --text-lg: clamp(0.9375rem, 0.88rem + 0.25vw, 1.125rem);
+
+  /* Espaçamentos Compactos Desktop */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+
+  /* Dimensões da Casca Desktop */
+  --menubar-height: 30px;
+  --tabbar-height: 28px;
+  --statusbar-height: 24px;
+  --toolbar-width: 38px;
+  --inspector-width: clamp(250px, 20vw, 310px);
+  --dock-rail-width: 32px;
+  --ruler-size: 20px;
+
+  /* Raios e Sombras */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-pill: 9999px;
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-canvas: 0 6px 20px rgba(0, 0, 0, 0.45);
+
+  /* Transições */
+  --transition-fast: 100ms ease-out;
+  --transition-normal: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================================================================
+   2. TEMA CLARO macOS (Cupertino Light — Finder / Xcode / Pages Light)
+   ========================================================================= */
+:root[data-theme="macos-light"] {
+  --bg-app: #f5f5f7;
+  --bg-workspace: #e4e4e9;
+  --bg-workspace-frame: #d5d5dc;
+  --bg-panel: #f5f5f7;
+  --bg-panel-header: #e8e8ed;
+  --bg-tab-active: #ffffff;
+  --bg-input: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e5e5ea;
+  --bg-active: #d6d6dc;
+  --bg-backdrop: rgba(29, 29, 31, 0.35);
+  --bg-login-stage:
+    radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.10), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(52, 199, 89, 0.08), transparent 50%),
+    #ebebf0;
+
+  --border-subtle: #d8d8de;
+  --border-strong: #b8b8bf;
+  --border-input: #c7c7cc;
+  --border-focus: #007aff;
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --text-muted: #86868b;
+
+  --accent-blue: #007aff;
+  --accent-blue-hover: #0062cc;
+  --accent-blue-alpha: rgba(0, 122, 255, 0.12);
+  --accent-text: #0062cc;
+
+  --win-header-bg: linear-gradient(180deg, #f9f9fb 0%, #eaeaf0 100%);
+  --win-header-text: #1d1d1f;
+  --statusbar-bg: #ededf2;
+  --statusbar-text: #515154;
+  --btn-bevel-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+  --input-bevel-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #f5f5f7;
+  --ruler-border: #d2d2d7;
+  --ruler-tick: #86868b;
+  --ruler-text: #515154;
+  --scrollbar-track: #efeff4;
+  --scrollbar-thumb: #c4c4c9;
+  --scrollbar-thumb-hover: #9e9ea6;
+
+  --err-access-bg: rgba(239, 68, 68, 0.10);
+  --err-access-text: #991b1b;
+  --err-app-bg: rgba(245, 158, 11, 0.12);
+  --err-app-text: #92400e;
+  --err-title-text: #7f1d1d;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-dropdown: 0 10px 28px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-canvas: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* =========================================================================
+   3. TEMA macOS VENTURA (macOS 13 Ventura — Stage Manager & California Poppy)
+   Painéis translúcidos em pérola/lavanda quente, palco em azul-oceano Ventura
+   suave e destaques em Laranja California Poppy / Azul Continuity.
+   ========================================================================= */
+:root[data-theme="macos-ventura"] {
+  --bg-app: #f4f1ee;
+  --bg-workspace: #2c3e55;       /* Palco Stage Manager em Azul-Oceano Ventura */
+  --bg-workspace-frame: #223144;
+  --bg-panel: #f6f3f0;           /* Painéis em tom pérola quente característico do Ventura */
+  --bg-panel-header: #ebe5e0;
+  --bg-tab-active: #ffffff;
+  --bg-input: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e6dfd9;
+  --bg-active: #dad1c9;
+  --bg-backdrop: rgba(24, 28, 40, 0.45);
+  --bg-login-stage:
+    radial-gradient(circle at 22% 28%, rgba(255, 107, 43, 0.32), transparent 48%),
+    radial-gradient(circle at 78% 72%, rgba(10, 132, 255, 0.28), transparent 52%),
+    linear-gradient(135deg, #1b2838 0%, #2c3e55 50%, #3d272a 100%);
+
+  --border-subtle: #dcd4ce;
+  --border-strong: #2c3e55;
+  --border-input: #cabfb7;
+  --border-focus: #e85d25;
+
+  --text-primary: #1f1d1b;
+  --text-secondary: #57524e;
+  --text-muted: #877f78;
+
+  /* Laranja California Poppy Oficial do macOS Ventura */
+  --accent-blue: #e85d25;
+  --accent-blue-hover: #cc4c19;
+  --accent-blue-alpha: rgba(232, 93, 37, 0.14);
+  --accent-text: #c84715;
+
+  --win-header-bg: linear-gradient(90deg, #f8f5f2 0%, #efe8e2 100%);
+  --win-header-text: #1f1d1b;
+  --statusbar-bg: #ebe5e0;
+  --statusbar-text: #57524e;
+  --btn-bevel-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --input-bevel-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #233246;
+  --ruler-border: #384d69;
+  --ruler-tick: #8fa6c2;
+  --ruler-text: #d6e4f5;
+  --scrollbar-track: #ebe5e0;
+  --scrollbar-thumb: #c4bab2;
+  --scrollbar-thumb-hover: #a3978e;
+
+  --err-access-bg: rgba(239, 68, 68, 0.11);
+  --err-access-text: #991b1b;
+  --err-app-bg: rgba(245, 158, 11, 0.14);
+  --err-app-text: #92400e;
+  --err-title-text: #7f1d1d;
+
+  --radius-xs: 5px;
+  --radius-sm: 7px;
+  --radius-md: 11px;
+  --shadow-dropdown: 0 12px 32px rgba(27, 40, 56, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-canvas: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* =========================================================================
+   4. TEMA MÉDIO VERDE & CINZA ESCURO (Soft Sage Green & Dark Slate)
+   ========================================================================= */
+:root[data-theme="medium-green"] {
+  --bg-app: #2f3b37;
+  --bg-workspace: #3a4742;       /* Cinza escuro esverdeado suave no palco */
+  --bg-workspace-frame: #313d38; /* Moldura do palco em cinza escuro */
+  --bg-panel: #dde7e3;           /* Painéis claros em tom verde-sálvia suave */
+  --bg-panel-header: #cedcd6;    /* Cabeçalhos e barra de abas em verde-acinzentado suave */
+  --bg-tab-active: #f2f7f5;
+  --bg-input: #f2f7f5;           /* Inputs claros com toque esverdeado suave */
+  --bg-elevated: #e7f0ec;
+  --bg-hover: #c5d6cf;
+  --bg-active: #b4c8c0;
+  --bg-backdrop: rgba(24, 34, 30, 0.55);
+  --bg-login-stage:
+    radial-gradient(circle at 20% 20%, rgba(43, 122, 94, 0.18), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(58, 71, 66, 0.35), transparent 50%),
+    #2f3b37;
+
+  --border-subtle: #b7cac2;
+  --border-strong: #3a4742;
+  --border-input: #9cb5ac;
+  --border-focus: #2b7a5e;
+
+  --text-primary: #1d2925;
+  --text-secondary: #3c4f48;
+  --text-muted: #5d736b;
+
+  --accent-blue: #2b7a5e;
+  --accent-blue-hover: #21634b;
+  --accent-blue-alpha: rgba(43, 122, 94, 0.16);
+  --accent-text: #1c5e46;
+
+  --win-header-bg: #2f3b37;
+  --win-header-text: #e6f0ec;
+  --statusbar-bg: #2f3b37;
+  --statusbar-text: #c8dad3;
+  --btn-bevel-shadow: 0 1px 1px rgba(29, 41, 37, 0.08);
+  --input-bevel-shadow: inset 0 1px 2px rgba(29, 41, 37, 0.05);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #2f3b37;
+  --ruler-border: #43544e;
+  --ruler-tick: #8ba39b;
+  --ruler-text: #c8dad3;
+  --scrollbar-track: #cfe0d9;
+  --scrollbar-thumb: #8ba39b;
+  --scrollbar-thumb-hover: #6d877e;
+
+  --err-access-bg: rgba(220, 38, 38, 0.12);
+  --err-access-text: #991b1b;
+  --err-app-bg: rgba(217, 119, 6, 0.14);
+  --err-app-text: #92400e;
+  --err-title-text: #7f1d1d;
+
+  --shadow-dropdown: 0 10px 26px rgba(20, 30, 27, 0.28), 0 2px 6px rgba(20, 30, 27, 0.16);
+}
+
+/* =========================================================================
+   5. TEMA MÉDIO AZUL & CINZA ESCURO (Soft Nordic Blue & Dark Slate)
+   ========================================================================= */
+:root[data-theme="medium-blue"] {
+  --bg-app: #2d3744;
+  --bg-workspace: #384554;
+  --bg-workspace-frame: #2f3a47;
+  --bg-panel: #dce5ef;
+  --bg-panel-header: #ccd8e6;
+  --bg-tab-active: #f2f6fb;
+  --bg-input: #f2f6fb;
+  --bg-elevated: #e8eff7;
+  --bg-hover: #c3d2e2;
+  --bg-active: #b1c4d8;
+  --bg-backdrop: rgba(22, 30, 40, 0.55);
+  --bg-login-stage:
+    radial-gradient(circle at 20% 20%, rgba(59, 110, 165, 0.20), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(56, 69, 84, 0.35), transparent 50%),
+    #2d3744;
+
+  --border-subtle: #b5c6d8;
+  --border-strong: #384554;
+  --border-input: #9ab0c7;
+  --border-focus: #3b6ea5;
+
+  --text-primary: #1c2633;
+  --text-secondary: #3b4b5e;
+  --text-muted: #5c7087;
+
+  --accent-blue: #3b6ea5;
+  --accent-blue-hover: #2e5987;
+  --accent-blue-alpha: rgba(59, 110, 165, 0.16);
+  --accent-text: #255080;
+
+  --win-header-bg: #2d3744;
+  --win-header-text: #e6eef7;
+  --statusbar-bg: #2d3744;
+  --statusbar-text: #c6d6e8;
+  --btn-bevel-shadow: 0 1px 1px rgba(28, 38, 51, 0.08);
+  --input-bevel-shadow: inset 0 1px 2px rgba(28, 38, 51, 0.05);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #2d3744;
+  --ruler-border: #435266;
+  --ruler-tick: #8ba0b8;
+  --ruler-text: #c6d6e8;
+  --scrollbar-track: #cfdbe8;
+  --scrollbar-thumb: #8ba0b8;
+  --scrollbar-thumb-hover: #6c84a0;
+
+  --err-access-bg: rgba(220, 38, 38, 0.12);
+  --err-access-text: #991b1b;
+  --err-app-bg: rgba(217, 119, 6, 0.14);
+  --err-app-text: #92400e;
+  --err-title-text: #7f1d1d;
+
+  --shadow-dropdown: 0 10px 26px rgba(18, 26, 36, 0.28), 0 2px 6px rgba(18, 26, 36, 0.16);
+}
+
+/* =========================================================================
+   6. TEMA WINDOWS 12 (Fluent Mica Lavender-Blue — Imagem 2)
+   Inspirado na Imagem 2: tons suaves de lavanda/periwinkle (#d8def8), painéis
+   translúcidos em branco-azulado (#f2f4fc), cantos arredondados Fluent e barra
+   inferior clara estilo dock flutuante.
+   ========================================================================= */
+:root[data-theme="win12"] {
+  --bg-app: #e4e9fc;
+  --bg-workspace: #d5ddf8;       /* Fundo Periwinkle / Lavanda-Azulado da Imagem 2 */
+  --bg-workspace-frame: #c4cff4;
+  --bg-panel: #f3f5fd;           /* Superfície Mica branca-azulada suave */
+  --bg-panel-header: #e6ebfa;
+  --bg-tab-active: #ffffff;
+  --bg-input: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e1e7fb;
+  --bg-active: #d0daf8;
+  --bg-backdrop: rgba(30, 41, 82, 0.32);
+  --bg-login-stage:
+    radial-gradient(circle at 25% 80%, rgba(168, 85, 247, 0.28), transparent 45%),
+    radial-gradient(circle at 80% 25%, rgba(56, 189, 248, 0.30), transparent 50%),
+    linear-gradient(135deg, #d5ddf8 0%, #e6ebfc 55%, #dbeafe 100%);
+
+  --border-subtle: #d6def5;
+  --border-strong: #b4c2ea;
+  --border-input: #c5d1f0;
+  --border-focus: #2563eb;
+
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #1d4ed8;
+  --accent-blue-alpha: rgba(37, 99, 235, 0.12);
+  --accent-text: #1d4ed8;
+
+  --win-header-bg: linear-gradient(90deg, #eef2ff 0%, #e5ebfc 100%);
+  --win-header-text: #111827;
+  --statusbar-bg: #f8f9fe;
+  --statusbar-text: #374151;
+  --btn-bevel-shadow: 0 2px 5px rgba(37, 99, 235, 0.08);
+  --input-bevel-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #eef2fd;
+  --ruler-border: #d6def5;
+  --ruler-tick: #6b7280;
+  --ruler-text: #374151;
+  --scrollbar-track: #e9edfb;
+  --scrollbar-thumb: #b9c6ec;
+  --scrollbar-thumb-hover: #93a6e0;
+
+  --err-access-bg: rgba(239, 68, 68, 0.10);
+  --err-access-text: #991b1b;
+  --err-app-bg: rgba(245, 158, 11, 0.12);
+  --err-app-text: #92400e;
+  --err-title-text: #7f1d1d;
+
+  --font-sans: 'Segoe UI Variable', 'Segoe UI', 'Inter', system-ui, sans-serif;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-dropdown: 0 14px 36px rgba(30, 58, 138, 0.16), 0 2px 8px rgba(30, 58, 138, 0.06);
+  --shadow-canvas: 0 10px 28px rgba(30, 58, 138, 0.16);
+}
+
+/* =========================================================================
+   7. TEMA WINDOWS XP (Luna Royal Blue & Beige — Imagem 3)
+   Fiel à Imagem 3: painéis no bege clássico Luna (#ece9d8), palco lateral
+   em azul Explorer (#6375d6), barra de título Royal Blue glossy (#0054e3),
+   barra de status azul Luna com indicador verde Start (#3c9e24).
+   ========================================================================= */
+:root[data-theme="winxp"] {
+  --bg-app: #ece9d8;
+  --bg-workspace: #6375d6;       /* Azul clássico do painel lateral do Explorer no Windows XP */
+  --bg-workspace-frame: #4f61c2;
+  --bg-panel: #ece9d8;           /* Bege/Creme autêntico Luna do System Properties (Imagem 3) */
+  --bg-panel-header: #e1dcc6;
+  --bg-tab-active: #ffffff;
+  --bg-input: #ffffff;
+  --bg-elevated: #f5f3e7;
+  --bg-hover: #f7f5ec;
+  --bg-active: #dcd7c0;
+  --bg-backdrop: rgba(0, 33, 91, 0.45);
+  --bg-login-stage:
+    linear-gradient(180deg, #003399 0%, #5a7edc 18%, #5a7edc 82%, #00309c 100%);
+
+  --border-subtle: #aca899;
+  --border-strong: #003c74;
+  --border-input: #7f9db9;       /* Borda azul-aço clássica de TextBox do Windows XP */
+  --border-focus: #0054e3;
+
+  --text-primary: #000000;
+  --text-secondary: #222222;
+  --text-muted: #5a574c;
+
+  --accent-blue: #0054e3;        /* Luna Royal Blue */
+  --accent-blue-hover: #003c9d;
+  --accent-blue-alpha: rgba(0, 84, 227, 0.15);
+  --accent-text: #003399;
+  --status-ok: #3c9e24;          /* Verde "Start" do Windows XP */
+
+  /* Barra de Título Glossy Luna Blue e Taskbar Inferior Azul XP */
+  --win-header-bg: linear-gradient(180deg, #3a83ff 0%, #0054e3 16%, #0046c7 85%, #003399 100%);
+  --win-header-text: #ffffff;
+  --statusbar-bg: linear-gradient(180deg, #3168d5 0%, #1941a5 14%, #2257d5 86%, #15388a 100%);
+  --statusbar-text: #ffffff;
+  --btn-bevel-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 1px #d6d0c2, 0 0 0 1px #003c74;
+  --input-bevel-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.12);
+  --panel-bevel-shadow: inset 1px 1px 0 #ffffff;
+
+  --ruler-bg: #ece9d8;
+  --ruler-border: #aca899;
+  --ruler-tick: #4a473e;
+  --ruler-text: #000000;
+  --scrollbar-track: #f3f1e6;
+  --scrollbar-thumb: #c2d5f2;
+  --scrollbar-thumb-hover: #9ab8eb;
+
+  --err-access-bg: #fde8e8;
+  --err-access-text: #990000;
+  --err-app-bg: #fff8db;
+  --err-app-text: #7a5200;
+  --err-title-text: #800000;
+
+  --font-sans: 'Tahoma', 'Franklin Gothic Medium', 'Segoe UI', sans-serif;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --shadow-dropdown: 2px 3px 8px rgba(0, 0, 0, 0.35), 0 0 0 1px #003c74;
+  --shadow-canvas: 0 5px 16px rgba(0, 0, 0, 0.38);
+}
+
+/* =========================================================================
+   8. TEMA CLARO WINDOWS 2000 (Win2000 Classic Desktop)
+   ========================================================================= */
+:root[data-theme="win2000"] {
+  --bg-app: #d4d0c8;             /* 3D Face clássico do Windows 2000 */
+  --bg-workspace: #808080;       /* AppWorkspace clássico do Windows 2000 */
+  --bg-workspace-frame: #6e6e6e;
+  --bg-panel: #d4d0c8;
+  --bg-panel-header: #c8c4bc;
+  --bg-tab-active: #d4d0c8;
+  --bg-input: #ffffff;
+  --bg-elevated: #d4d0c8;
+  --bg-hover: #e4e1da;
+  --bg-active: #b8b4ac;
+  --bg-backdrop: rgba(0, 0, 0, 0.45);
+  --bg-login-stage: #3a6ea5;
+
+  --border-subtle: #808080;
+  --border-strong: #404040;
+  --border-input: #808080;
+  --border-focus: #0a246a;
+
+  --text-primary: #000000;
+  --text-secondary: #202020;
+  --text-muted: #505050;
+
+  --accent-blue: #0a246a;
+  --accent-blue-hover: #10348c;
+  --accent-blue-alpha: rgba(10, 36, 106, 0.14);
+  --accent-text: #0a246a;
+
+  --win-header-bg: linear-gradient(90deg, #0a246a 0%, #a6caf0 100%);
+  --win-header-text: #ffffff;
+  --statusbar-bg: #d4d0c8;
+  --statusbar-text: #000000;
+  --btn-bevel-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #404040, inset -2px -2px 0px #808080;
+  --input-bevel-shadow: inset 1px 1px 0px #808080, inset 2px 2px 0px #404040, inset -1px -1px 0px #ffffff;
+  --panel-bevel-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080;
+
+  --ruler-bg: #d4d0c8;
+  --ruler-border: #808080;
+  --ruler-tick: #404040;
+  --ruler-text: #000000;
+  --scrollbar-track: #e6e3dc;
+  --scrollbar-thumb: #b8b4ac;
+  --scrollbar-thumb-hover: #9c9890;
+
+  --err-access-bg: #fae1e1;
+  --err-access-text: #800000;
+  --err-app-bg: #fff4ce;
+  --err-app-text: #664d00;
+  --err-title-text: #800000;
+
+  --font-sans: 'Tahoma', 'MS Sans Serif', 'Segoe UI', sans-serif;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-pill: 0px;
+  --shadow-dropdown: 2px 2px 0px #404040, inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080;
+  --shadow-canvas: 3px 3px 0px rgba(0, 0, 0, 0.45);
+}
+
+/* =========================================================================
+   9. TEMA WINDOWS 98 SE (Classic Win98 Teal & Silver — Imagem 1)
+   Fiel à Imagem 1: fundo de área de trabalho Teal clássico (#008080), painéis
+   cinza prata (#c0c0c0) com chanfro 3D profundo, barra de título #000080 -> #1084d0.
+   ========================================================================= */
+:root[data-theme="win98"] {
+  --bg-app: #c0c0c0;
+  --bg-workspace: #008080;       /* Verde-azulado (Teal) icônico do Desktop Windows 98 (Imagem 1) */
+  --bg-workspace-frame: #006666;
+  --bg-panel: #c0c0c0;           /* Cinza Prata 3D clássico do Windows 98 */
+  --bg-panel-header: #b5b5b5;
+  --bg-tab-active: #c0c0c0;
+  --bg-input: #ffffff;
+  --bg-elevated: #c0c0c0;
+  --bg-hover: #d4d4d4;
+  --bg-active: #a8a8a8;
+  --bg-backdrop: rgba(0, 64, 64, 0.55);
+  --bg-login-stage: #008080;     /* Fundo Teal clássico do Logon do Windows 98 */
+
+  --border-subtle: #808080;
+  --border-strong: #000000;
+  --border-input: #808080;
+  --border-focus: #000080;
+
+  --text-primary: #000000;
+  --text-secondary: #111111;
+  --text-muted: #4a4a4a;
+
+  --accent-blue: #000080;        /* Navy Blue clássico do Windows 98 */
+  --accent-blue-hover: #1084d0;
+  --accent-blue-alpha: rgba(0, 0, 128, 0.14);
+  --accent-text: #000080;
+
+  --win-header-bg: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  --win-header-text: #ffffff;
+  --statusbar-bg: #c0c0c0;
+  --statusbar-text: #000000;
+  --btn-bevel-shadow: inset 1px 1px 0px #ffffff, inset 2px 2px 0px #dfdfdf, inset -1px -1px 0px #000000, inset -2px -2px 0px #808080;
+  --input-bevel-shadow: inset 1px 1px 0px #808080, inset 2px 2px 0px #000000, inset -1px -1px 0px #ffffff, inset -2px -2px 0px #dfdfdf;
+  --panel-bevel-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080;
+
+  --ruler-bg: #c0c0c0;
+  --ruler-border: #808080;
+  --ruler-tick: #000000;
+  --ruler-text: #000000;
+  --scrollbar-track: #dfdfdf;
+  --scrollbar-thumb: #c0c0c0;
+  --scrollbar-thumb-hover: #a0a0a0;
+
+  --err-access-bg: #ffe0e0;
+  --err-access-text: #800000;
+  --err-app-bg: #ffffcc;
+  --err-app-text: #664400;
+  --err-title-text: #800000;
+
+  --font-sans: 'MS Sans Serif', 'Tahoma', 'Segoe UI', sans-serif;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-pill: 0px;
+  --shadow-dropdown: 2px 2px 0px #000000, inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080;
+  --shadow-canvas: 4px 4px 0px rgba(0, 0, 0, 0.65);
+}
+
+/* =========================================================================
+   10. TEMA MS-DOS EDITOR (EDIT.COM VGA Text Mode — Imagens 4 e 5)
+   Fiel às Imagens 4 e 5: palco em Azul VGA (#0000aa), barra de menus e caixas
+   de diálogo em Cinza VGA (#aaaaaa), barra de status inferior em Ciano VGA
+   (#00aaaa), fonte 100% monoespaçada e sombras sólidas pretas em blocos!
+   ========================================================================= */
+:root[data-theme="msdos"] {
+  --bg-app: #0000aa;
+  --bg-workspace: #0000aa;       /* Azul VGA clássico do MS-DOS Editor (Imagens 4 e 5) */
+  --bg-workspace-frame: #000084;
+  --bg-panel: #aaaaaa;           /* Cinza VGA das barras e caixas de diálogo do EDIT.COM */
+  --bg-panel-header: #888888;
+  --bg-tab-active: #ffffff;
+  --bg-input: #ffffff;           /* Campos e botões brancos como na caixa Find da Imagem 5 */
+  --bg-elevated: #aaaaaa;
+  --bg-hover: #ffffff;
+  --bg-active: #55ffff;
+  --bg-backdrop: rgba(0, 0, 80, 0.75);
+  --bg-login-stage: #0000aa;     /* Fundo Azul VGA clássico para as telas de login */
+
+  --border-subtle: #000000;
+  --border-strong: #ffffff;
+  --border-input: #000000;
+  --border-focus: #00aaaa;
+
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #333333;
+
+  --accent-blue: #0000aa;        /* Destaque Azul VGA / Ciano MS-DOS */
+  --accent-blue-hover: #00aaaa;
+  --accent-blue-alpha: rgba(0, 170, 170, 0.35);
+  --accent-text: #0000aa;
+  --status-ok: #00aa00;
+  --status-cyan: #0000aa;
+
+  /* Cabeçalho de janela branco com texto preto (como a janela "Find" na Imagem 5)
+     e Statusbar em Ciano VGA (#00aaaa como "F1=Help Enter=Execute" nas Imagens 4 e 5) */
+  --win-header-bg: #ffffff;
+  --win-header-text: #000000;
+  --statusbar-bg: #00aaaa;
+  --statusbar-text: #000000;
+
+  /* Sombra sólida preta deslocada idêntica aos botões < OK > [ Cancel ] da Imagem 5 */
+  --btn-bevel-shadow: 4px 4px 0px #000000;
+  --input-bevel-shadow: 2px 2px 0px #000000;
+  --panel-bevel-shadow: none;
+
+  /* Réguas em Azul VGA com marcações Brancas/Amarelas */
+  --ruler-bg: #0000aa;
+  --ruler-border: #aaaaaa;
+  --ruler-tick: #ffffff;
+  --ruler-text: #ffff55;
+  --scrollbar-track: #aaaaaa;
+  --scrollbar-thumb: #000000;
+  --scrollbar-thumb-hover: #00aaaa;
+
+  --err-access-bg: #aa0000;
+  --err-access-text: #ffffff;
+  --err-app-bg: #aa5500;
+  --err-app-text: #ffff55;
+  --err-title-text: #ffff55;
+
+  --font-sans: 'Consolas', 'Courier New', 'JetBrains Mono', monospace;
+  --font-mono: 'Consolas', 'Courier New', 'JetBrains Mono', monospace;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-pill: 0px;
+  --shadow-dropdown: 8px 8px 0px #000000;
+  --shadow-canvas: 8px 8px 0px #000000;
+}
+
+/* =========================================================================
+   11. TEMA HACKER TERMINAL (Cyber Ops / Matrix Phosphor CRT)
+   Estética de Terminal Red-Team & Matrix: fundo obsidiana CRT profundo,
+   textos em Verde Fósforo Brilhante (#00ff66), Verde Cibernético (#34d399)
+   e Verde Matrix (#10b981), bordas luminescentes e fonte 100% monoespaçada.
+   ========================================================================= */
+:root[data-theme="hacker"] {
+  --bg-app: #030805;
+  --bg-workspace: #06110a;       /* Palco CRT Matrix Escuro */
+  --bg-workspace-frame: #040b06;
+  --bg-panel: #060e08;           /* Painéis em Preto-Obsidiana Esverdeado */
+  --bg-panel-header: #040905;
+  --bg-tab-active: #0b1e12;
+  --bg-input: #020603;           /* Inputs estilo linha de comando */
+  --bg-elevated: #09170e;
+  --bg-hover: #0e2617;
+  --bg-active: #143822;
+  --bg-backdrop: rgba(0, 12, 4, 0.78);
+  --bg-login-stage:
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 102, 0.15), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.12), transparent 50%),
+    repeating-linear-gradient(0deg, rgba(0, 255, 102, 0.03) 0px, rgba(0, 255, 102, 0.03) 1px, transparent 1px, transparent 3px),
+    #020603;
+
+  --border-subtle: #0e2e1b;
+  --border-strong: #00ff66;
+  --border-input: #155e34;
+  --border-focus: #00ff66;
+
+  /* Cores de Texto Fósforo Hacker como deve ser */
+  --text-primary: #00ff66;       /* Verde Fósforo Principal (CRT Phosphor Green) */
+  --text-secondary: #34d399;     /* Verde Matrix Secundário */
+  --text-muted: #10b981;         /* Verde Terminal Suave para rótulos e atalhos */
+
+  --accent-blue: #059669;        /* Botões e destaques em Verde Hacker Intenso */
+  --accent-blue-hover: #10b981;
+  --accent-blue-alpha: rgba(0, 255, 102, 0.16);
+  --accent-text: #00ff66;
+  --status-ok: #00ff66;
+  --status-cyan: #2dd4bf;
+  --guide-magenta: #00ff66;
+
+  --win-header-bg: linear-gradient(90deg, #041209 0%, #0b2e19 50%, #041209 100%);
+  --win-header-text: #00ff66;
+  --statusbar-bg: #030a05;
+  --statusbar-text: #00ff66;
+  --btn-bevel-shadow: 0 0 10px rgba(0, 255, 102, 0.25), inset 0 0 4px rgba(0, 255, 102, 0.2);
+  --input-bevel-shadow: inset 0 0 6px rgba(0, 255, 102, 0.12);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #040a06;
+  --ruler-border: #134e2a;
+  --ruler-tick: #10b981;
+  --ruler-text: #00ff66;
+  --scrollbar-track: #040a06;
+  --scrollbar-thumb: #155e34;
+  --scrollbar-thumb-hover: #00ff66;
+
+  --err-access-bg: rgba(239, 68, 68, 0.18);
+  --err-access-text: #fca5a5;
+  --err-app-bg: rgba(245, 158, 11, 0.18);
+  --err-app-text: #fde047;
+  --err-title-text: #ff5555;
+
+  --font-sans: 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --shadow-dropdown: 0 0 22px rgba(0, 255, 102, 0.22), 0 10px 30px rgba(0, 0, 0, 0.9);
+  --shadow-canvas: 0 0 28px rgba(0, 255, 102, 0.18), 0 8px 24px rgba(0, 0, 0, 0.85);
+}
+
+/* =========================================================================
+   12. TEMA ULTRA-FUTURISTA (Quantum Holo-HUD 2099 / Sci-Fi Cyber Deck)
+   Interface Holográfica Sci-Fi de Alta Energia: vidro quântico azul-abissal,
+   feixes de luz Ciano Laser (#00f0ff) e Plasma Violeta/Magenta (#d946ef),
+   textos bioluminescentes e brilho holográfico multidimensional.
+   ========================================================================= */
+:root[data-theme="futuristic"] {
+  --bg-app: #040714;
+  --bg-workspace: #070d24;       /* Palco Holográfico Deep Space */
+  --bg-workspace-frame: #0b1536;
+  --bg-panel: #081029;           /* Painéis de Vidro Quântico / Plasma Escuro */
+  --bg-panel-header: #060b1e;
+  --bg-tab-active: #101f4c;
+  --bg-input: #050a1c;
+  --bg-elevated: #0d183a;
+  --bg-hover: #132556;
+  --bg-active: #1b3375;
+  --bg-backdrop: rgba(3, 6, 20, 0.78);
+  --bg-login-stage:
+    radial-gradient(circle at 18% 22%, rgba(0, 240, 255, 0.24), transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(217, 70, 239, 0.24), transparent 48%),
+    radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.15), transparent 65%),
+    #040714;
+
+  --border-subtle: #152c62;
+  --border-strong: #00f0ff;
+  --border-input: #0ea5e9;       /* Bordas iluminadas por feixe de fótons Ciano */
+  --border-focus: #d946ef;       /* Foco em Laser Magenta/Plasma */
+
+  /* Tipografia Holográfica Bioluminescente */
+  --text-primary: #e2f8ff;       /* Branco-Ciano Cristalino */
+  --text-secondary: #7dd3fc;     /* Azul-Laser Holográfico */
+  --text-muted: #38bdf8;         /* Telemetria Ciano Suave */
+
+  --accent-blue: #0284c7;        /* Propulsor Ciano-Elétrico */
+  --accent-blue-hover: #00b4d8;
+  --accent-blue-alpha: rgba(0, 240, 255, 0.18);
+  --accent-text: #00f0ff;
+  --status-ok: #00f5d4;
+  --status-cyan: #d946ef;
+  --guide-magenta: #f43f5e;
+
+  --win-header-bg: linear-gradient(90deg, #071436 0%, #0a2e63 48%, #4a0e6e 100%);
+  --win-header-text: #00f0ff;
+  --statusbar-bg: linear-gradient(90deg, #050f29 0%, #09234d 50%, #340852 100%);
+  --statusbar-text: #7dd3fc;
+  --btn-bevel-shadow: 0 0 14px rgba(0, 240, 255, 0.35), inset 0 0 8px rgba(217, 70, 239, 0.22);
+  --input-bevel-shadow: inset 0 0 8px rgba(0, 240, 255, 0.14), 0 0 6px rgba(14, 165, 233, 0.12);
+  --panel-bevel-shadow: none;
+
+  --ruler-bg: #060b1e;
+  --ruler-border: #1d4ed8;
+  --ruler-tick: #00f0ff;
+  --ruler-text: #7dd3fc;
+  --scrollbar-track: #050a1c;
+  --scrollbar-thumb: #0284c7;
+  --scrollbar-thumb-hover: #00f0ff;
+
+  --err-access-bg: rgba(244, 63, 94, 0.2);
+  --err-access-text: #fecdd3;
+  --err-app-bg: rgba(217, 70, 239, 0.2);
+  --err-app-text: #f5d0fe;
+  --err-title-text: #00f0ff;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-dropdown: 0 0 28px rgba(0, 240, 255, 0.28), 0 0 54px rgba(217, 70, 239, 0.18), 0 14px 40px rgba(0, 0, 0, 0.9);
+  --shadow-canvas: 0 0 32px rgba(0, 240, 255, 0.24), 0 10px 30px rgba(0, 0, 0, 0.85);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Fallback para navegadores sem suporte a ::-webkit-scrollbar (ex: Firefox) */
+@supports not selector(::-webkit-scrollbar) {
+  *, *::before, *::after {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+}
+
+/* Design System de Scrollbars Desktop CortexUI (Documento Principal) */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent-blue);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* =========================================================================
+   Casca Desktop Universal (Shell Grid)
+   Suporta qualquer aplicação Web com layout Desktop (IDEs, ERPs, Editores)
+   ========================================================================= */
+.cortex-shell {
+  display: grid;
+  grid-template-rows: var(--menubar-height) var(--tabbar-height) 1fr var(--statusbar-height);
+  grid-template-columns: var(--toolbar-width) 1fr auto;
+  grid-template-areas:
+    "menubar   menubar   menubar"
+    "toolbar   tabbar    inspector"
+    "toolbar   workspace inspector"
+    "statusbar statusbar statusbar";
+  width: 100vw;
+  height: 100dvh;
+}
+
+cortex-menubar {
+  grid-area: menubar;
+  z-index: 8000;
+}
+
+cortex-tabbar {
+  grid-area: tabbar;
+  z-index: 90;
+}
+
+cortex-toolbar {
+  grid-area: toolbar;
+  z-index: 100;
+}
+
+cortex-workspace,
+.cortex-workspace-slot {
+  grid-area: workspace;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-workspace);
+}
+
+cortex-inspector {
+  grid-area: inspector;
+  z-index: 100;
+}
+
+cortex-statusbar {
+  grid-area: statusbar;
+  z-index: 200;
+}
+
+/* Adaptação Responsiva (Tablets e Dispositivos Móveis <= 768px) */
+@media (max-width: 768px) {
+  :root {
+    --menubar-height: 38px;
+    --tabbar-height: 32px;
+    --statusbar-height: 28px;
+  }
+
+  .cortex-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "menubar"
+      "tabbar"
+      "workspace"
+      "statusbar";
+  }
+}

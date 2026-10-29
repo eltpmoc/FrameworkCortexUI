@@ -1,0 +1,28 @@
+{
+  "name": "cortex-ui",
+  "version": "1.0.0",
+  "description": "Framework de Componentes Web Avançados, Suítes Enterprise, Editores Visuais e Sistema de 12 Temas Dinâmicos",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "npx serve -l 3000 .",
+    "test": "node --check src/components/planning/cortex-schedulers.js && node --check src/components/cortex-advanced-views.js"
+  },
+  "keywords": [
+    "cortex-ui",
+    "web-components",
+    "enterprise-ui",
+    "diagram-editor",
+    "scheduler",
+    "gantt",
+    "kanban",
+    "spreadsheet",
+    "pivot-grid",
+    "tree-list",
+    "themes",
+    "design-system"
+  ],
+  "author": "Elton Alves Pereira <eltonalvesp@outlook.com.br>",
+  "license": "MIT"
+}

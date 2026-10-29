@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CortexUI Docs — Manual Oficial de Componentes &amp; API</title>
+  <link rel="stylesheet" href="./src/styles/theme.css" />
+</head>
+<body>
+  <!-- Página de Documentação e Manual Interativo (Modo Standalone) -->
+  <cortex-docs standalone="true"></cortex-docs>
+
+  <!-- Componentes Globais para Testes Ao Vivo na Documentação -->
+  <cortex-context-menu></cortex-context-menu>
+  <cortex-command-palette></cortex-command-palette>
+  <cortex-floating-window></cortex-floating-window>
+  <cortex-login></cortex-login>
+  <cortex-modal></cortex-modal>
+
+  <script type="module">
+    import { AppState } from './src/core/Store.js';
+    import { EventBus } from './src/core/EventBus.js';
+    import { CortexModal } from './src/components/cortex-modal.js';
+    import './src/components/cortex-docs.js';
+    import './src/components/cortex-context-menu.js';
+    import './src/components/cortex-command-palette.js';
+    import './src/components/cortex-floating-window.js';
+    import './src/components/cortex-login.js';
+
+    const floatingWindowsEl = document.querySelector('cortex-floating-window');
+    const loginShowcaseEl = document.querySelector('cortex-login');
+    const commandPaletteEl = document.querySelector('cortex-command-palette');
+
+    window.addEventListener('cortex-menu-action', async (e) => {
+      const { action } = e.detail;
+      if (action === 'insert-table') {
+        floatingWindowsEl?.openWindow({
+          id: 'win-datagrid',
+          title: 'Desktop Data Grid — Objetos do Documento',
+          type: 'datatable'
+        });
+      } else if (action === 'open-tree') {
+        floatingWindowsEl?.openWindow({
+          id: 'win-treeview',
+          title: 'Scene TreeView Explorer',
+          type: 'tree'
+        });
+      } else if (action === 'open-login') {
+        loginShowcaseEl?.open('1');
+      } else if (action === 'open-palette') {
+        commandPaletteEl?.open();
+      } else if (action === 'new-doc') {
+        const res = await CortexModal.form({
+          title: 'New Document',
+          message: 'Configure os parâmetros do novo documento Desktop:',
+          fields: [
+            { name: 'title', label: 'Nome:', type: 'text', value: 'Untitled-1' },
+            {
+              name: 'preset',
+              label: 'Formato:',
+              type: 'select',
+              value: 'A4 (210 × 297 mm)',
+              options: ['A4 (210 × 297 mm)', 'Letter (215.9 × 279.4 mm)', 'Web 1080p (508 × 285.7 mm)']
+            },
+            { name: 'widthMm', label: 'Largura (mm):', type: 'number', value: 210 },
+            { name: 'heightMm', label: 'Altura (mm):', type: 'number', value: 297 }
+          ],
+          confirmText: 'Criar Documento'
+        });
+        if (res) {
+          CortexModal.toast(`Documento "${res.title}" configurado!`, 'success');
+        }
+      }
+    });
+
+    window.CortexUI = { AppState, EventBus, CortexModal };
+  </script>
+</body>
+</html>

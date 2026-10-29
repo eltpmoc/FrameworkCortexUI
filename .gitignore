@@ -1,0 +1,22 @@
+# Dependências
+node_modules/
+package-lock.json
+
+# Ambiente e IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Scripts temporários de desenvolvimento e scratch
+scratch/
+*.log
+
+# Arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini

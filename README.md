@@ -91,7 +91,7 @@ Apenas o **Node.js** instalado (para servir os arquivos estáticos) ou qualquer 
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/<seu-usuario>/FrameworkCortexUI.git
+git clone https://github.com/eltpmoc/FrameworkCortexUI.git
 cd FrameworkCortexUI
 ```
 

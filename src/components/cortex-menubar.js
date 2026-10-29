@@ -129,6 +129,7 @@ export class CortexMenubar extends CortexElement {
   constructor() {
     super();
     this._customMenus = null;
+    this._windowTitle = null;
     this._activeMenuId = null;
     this._mobileDrawerOpen = false;
     this._handleOutsideClick = this._handleOutsideClick.bind(this);
@@ -139,6 +140,15 @@ export class CortexMenubar extends CortexElement {
    * Permite que qualquer aplicação Web injete seus próprios menus Desktop via JS:
    * document.querySelector('cortex-menubar').menus = [...]
    */
+  set windowTitle(val) {
+    this._windowTitle = val;
+    this._updateTitle();
+  }
+
+  get windowTitle() {
+    return this._windowTitle;
+  }
+
   set menus(customMenus) {
     if (Array.isArray(customMenus)) {
       this._customMenus = customMenus;
@@ -172,6 +182,9 @@ export class CortexMenubar extends CortexElement {
   }
 
   _getComputedTitle() {
+    if (this._windowTitle) return this._windowTitle;
+    const attrTitle = this.getAttribute('window-title');
+    if (attrTitle) return attrTitle;
     const appName = this.getAttribute('app-name') || AppState.get('appName') || 'CortexUI';
     const tabs = AppState.get('openTabs') || [];
     const activeTab = tabs.find((t) => t.id === AppState.get('activeTabId'));
@@ -381,7 +394,14 @@ export class CortexMenubar extends CortexElement {
   }
 
   render() {
-    const badge = this.getAttribute('app-badge') || AppState.get('appBadge') || 'Id';
+    const hasBadgeAttr = this.hasAttribute('app-badge');
+    const badgeAttr = this.getAttribute('app-badge');
+    const noBadge = this.hasAttribute('no-badge') || (hasBadgeAttr && (!badgeAttr || badgeAttr === 'none'));
+    const badge = noBadge ? '' : (badgeAttr || AppState.get('appBadge') || 'Id');
+    const showDocs = !this.hasAttribute('no-docs');
+    const showLogin = !this.hasAttribute('no-login');
+    const showPresets = !this.hasAttribute('no-presets') && !this.hasAttribute('no-preset');
+    const showSearch = !this.hasAttribute('no-search');
     const preset = AppState.get('workspacePreset') || 'Essentials';
     const currentTheme = AppState.get('theme') || 'dark';
     const currentLang = getLanguage();
@@ -512,13 +532,20 @@ export class CortexMenubar extends CortexElement {
 
         /* Centro: Título da Janela/Documento */
         .window-title {
-          color: var(--text-secondary);
-          font-size: var(--text-xs);
+          color: #e2e8f0;
+          font-size: 11.5px;
+          font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           text-align: center;
           pointer-events: none;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 3px 14px;
+          border-radius: 12px;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+          letter-spacing: 0.2px;
         }
 
         /* Direita: Seletor de Workspace ("Essentials") + Barra de Busca */
@@ -656,7 +683,7 @@ export class CortexMenubar extends CortexElement {
           </svg>
         </button>
 
-        <span class="app-badge" title="CortexUI Desktop Application">${badge}</span>
+        ${badge ? `<span class="app-badge" title="CortexUI Desktop Application">${badge}</span>` : ''}
 
         <ul class="menu-list" role="menubar">
           ${menus
@@ -702,6 +729,7 @@ export class CortexMenubar extends CortexElement {
           ${currentLang === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN'}
         </button>
 
+        ${showDocs ? `
         <button
           class="menu-trigger"
           data-action="open-docs"
@@ -709,8 +737,9 @@ export class CortexMenubar extends CortexElement {
           title="${currentLang === 'pt-BR' ? 'Abrir Manual Oficial &amp; Documentação de Componentes (F1)' : 'Open Official Manual &amp; Components Documentation (F1)'}"
         >
           &#128214; ${t('menubar.docs')}
-        </button>
+        </button>` : ''}
 
+        ${showLogin ? `
         <button
           class="menu-trigger"
           data-action="open-login"
@@ -718,7 +747,7 @@ export class CortexMenubar extends CortexElement {
           title="${currentLang === 'pt-BR' ? 'Visualizar os 10 Modelos de Tela de Login do CortexUI' : 'View CortexUI 10 Login Screen Models'}"
         >
           &#128274; ${t('menubar.login')}
-        </button>
+        </button>` : ''}
 
         <select class="workspace-select theme-select" aria-label="CortexUI Theme" title="${currentLang === 'pt-BR' ? 'Alternar Tema Visual da Aplicação (12 Temas)' : 'Switch Visual Application Theme (12 Themes)'}">
           <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>&#127769; ${currentLang === 'pt-BR' ? 'Tema: Dark Pro (Padrão)' : 'Theme: Dark Pro (Default)'}</option>
@@ -735,16 +764,18 @@ export class CortexMenubar extends CortexElement {
           <option value="msdos" ${currentTheme === 'msdos' ? 'selected' : ''}>&#9000; ${currentLang === 'pt-BR' ? 'Tema: MS-DOS (EDIT.COM)' : 'Theme: MS-DOS (EDIT.COM)'}</option>
         </select>
 
+        ${showPresets ? `
         <select class="workspace-select layout-select" aria-label="Workspace Layout">
           <option value="Essentials" ${preset === 'Essentials' ? 'selected' : ''}>Essentials</option>
           <option value="Advanced" ${preset === 'Advanced' ? 'selected' : ''}>Advanced</option>
           <option value="Compact" ${preset === 'Compact' ? 'selected' : ''}>Compact</option>
-        </select>
+        </select>` : ''}
 
+        ${showSearch ? `
         <label class="search-box" aria-label="Search Commands">
           <input type="text" placeholder="${t('common.search')}" />
           <span class="search-icon">&#128269;</span>
-        </label>
+        </label>` : ''}
       </div>
 
       <!-- Gaveta Mobile (Off-Canvas) -->

@@ -404,6 +404,28 @@ export class CortexSchedulerResources extends CortexElement {
           --slot-h: 38px;
         }
 
+        
+        :host([embedded]), :host([windowed]) {
+          display: flex !important;
+          flex-direction: column !important;
+          width: 100% !important;
+          height: 100% !important;
+          overflow: hidden !important;
+        }
+        :host([embedded]) .sched-container, :host([windowed]) .sched-container {
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          height: 100% !important;
+          background: transparent !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+        :host([embedded]) .sched-scroll-area, :host([windowed]) .sched-scroll-area {
+          flex: 1 !important;
+          height: calc(100% - 50px) !important;
+          overflow-y: auto !important;
+        }
         .sched-container {
           background: var(--bg-panel, #ffffff);
           border: 1px solid var(--border-subtle, #e0e0e0);

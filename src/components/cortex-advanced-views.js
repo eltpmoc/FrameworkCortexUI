@@ -1903,6 +1903,28 @@ export class CortexDiagram extends CortexElement {
           z-index: 999999;
         }
 
+        
+        :host([embedded]), :host([windowed]) {
+          display: flex !important;
+          flex-direction: column !important;
+          width: 100% !important;
+          height: 100% !important;
+          overflow: hidden !important;
+        }
+        :host([embedded]) .cd-wrapper, :host([windowed]) .cd-wrapper {
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          height: 100% !important;
+          max-height: 100% !important;
+          width: 100% !important;
+          background: transparent !important;
+          flex: 1 !important;
+        }
+        :host([embedded]) .cd-canvas-area, :host([windowed]) .cd-canvas-area {
+          flex: 1 !important;
+          height: 100% !important;
+        }
         .cd-wrapper {
           position: relative;
           background: var(--bg-panel);

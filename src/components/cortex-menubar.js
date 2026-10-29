@@ -412,20 +412,27 @@ export class CortexMenubar extends CortexElement {
         ${this.baseStyles}
         :host {
           display: grid;
-          grid-template-columns: 1fr auto 1fr;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          grid-auto-flow: column;
           align-items: center;
-          height: var(--menubar-height);
-          background-color: var(--bg-panel);
-          border-bottom: 1px solid var(--border-subtle);
-          padding: 0 var(--space-2);
-          font-size: var(--text-xs);
+          height: var(--menubar-height, 30px);
+          min-height: var(--menubar-height, 30px);
+          max-height: var(--menubar-height, 30px);
+          background-color: var(--bg-panel, #252526);
+          border-bottom: 1px solid var(--border-subtle, #333337);
+          padding: 0 8px;
+          font-size: var(--text-xs, 12px);
           position: relative;
+          box-sizing: border-box;
+          overflow: visible;
         }
 
         .left-zone {
           display: flex;
           align-items: center;
           gap: 2px;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         /* Ícone da Aplicação Desktop (ex: "Id", "Cx", etc.) */
@@ -532,19 +539,21 @@ export class CortexMenubar extends CortexElement {
 
         /* Centro: Título da Janela/Documento */
         .window-title {
-          color: #e2e8f0;
+          color: #d1d5db;
           font-size: 11.5px;
           font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           text-align: center;
+          justify-self: center;
           pointer-events: none;
+          max-width: 440px;
+          padding: 2px 14px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 3px 14px;
           border-radius: 12px;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
           letter-spacing: 0.2px;
         }
 
@@ -554,6 +563,8 @@ export class CortexMenubar extends CortexElement {
           align-items: center;
           justify-content: flex-end;
           gap: 6px;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .workspace-select {
@@ -835,7 +846,7 @@ export class CortexMenubar extends CortexElement {
     });
 
     const wsSelect = this.shadowRoot.querySelector('.layout-select');
-    wsSelect.addEventListener('change', (e) => {
+    wsSelect?.addEventListener('change', (e) => {
       const val = e.target.value;
       AppState.setState({
         workspacePreset: val,

@@ -323,7 +323,7 @@ export class CortexChat extends CortexElement {
         <div style="font-size: 12.5px; color: var(--text-secondary, #64748b);">
           Selecione uma das fotos reais da pasta <strong>img/docs</strong> (pessoa1 a pessoa12) para o Atendente de Suporte:
         </div>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 280px; overflow-y: auto; padding: 4px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 280px; overflow-y: auto; padding: 4px; scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb, #3f3f46) var(--scrollbar-track, #1b1b1d);">
           ${peopleList.map(idx => `
             <div 
               class="person-pick-item" 
@@ -412,6 +412,8 @@ export class CortexChat extends CortexElement {
 
     this.shadowRoot.innerHTML = `
       <style>
+        ${this.baseStyles}
+
         :host {
           display: flex;
           flex-direction: column;
@@ -419,7 +421,7 @@ export class CortexChat extends CortexElement {
           height: 100%;
           background: var(--bg-app, #ffffff);
           color: var(--text-primary, #1e293b);
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
           font-size: 13.5px;
           line-height: 1.45;
           box-sizing: border-box;
@@ -496,7 +498,7 @@ export class CortexChat extends CortexElement {
           border-color: var(--border-color, #94a3b8);
         }
 
-        /* Corpo do Chat com Scroll */
+        /* Corpo do Chat com Scroll integrado ao Tema do CortexUI */
         .chat-body {
           flex: 1;
           overflow-y: auto;
@@ -506,6 +508,42 @@ export class CortexChat extends CortexElement {
           gap: 16px;
           background: var(--bg-app, #ffffff);
           scroll-behavior: smooth;
+          scrollbar-width: thin;
+          scrollbar-color: var(--scrollbar-thumb, #3f3f46) var(--scrollbar-track, #1b1b1d);
+        }
+
+        .chat-body::-webkit-scrollbar {
+          width: 7px;
+          height: 7px;
+        }
+
+        .chat-body::-webkit-scrollbar-button {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+          background: var(--scrollbar-track, #1b1b1d);
+          border: none;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+          background: var(--scrollbar-thumb, #3f3f46);
+          border-radius: var(--radius-pill, 9999px);
+          border: 1px solid var(--scrollbar-track, #1b1b1d);
+        }
+
+        .chat-body::-webkit-scrollbar-thumb:hover {
+          background: var(--scrollbar-thumb-hover, #52525b);
+        }
+
+        .chat-body::-webkit-scrollbar-thumb:active {
+          background: var(--accent-blue, #1473e6);
+        }
+
+        .chat-body::-webkit-scrollbar-corner {
+          background: var(--scrollbar-track, #1b1b1d);
         }
 
         /* Divisor de Data Centralizado */
@@ -1136,6 +1174,8 @@ export class CortexChatShowcase extends CortexElement {
   render() {
     this.shadowRoot.innerHTML = `
       <style>
+        ${this.baseStyles}
+
         :host {
           display: flex;
           flex-direction: column;

@@ -128,6 +128,7 @@ export class CortexWorkspace extends CortexElement {
 
     this.watchState('activeTool', (tool) => {
       this._updateCursor(tool);
+      this.engine?.requestRender();
     });
 
     this._bindStageEvents(stageCanvas);
@@ -403,18 +404,25 @@ export class CortexWorkspace extends CortexElement {
 
       // Ferramenta Rotação Direta (Rotate Tool)
       if (tool === 'rotate') {
+        let targetNode = this.engine.selectedNode;
+
+        // Se clicou em outro nó ou não havia seleção, seleciona nó sob o cursor
         const hitNode = this.engine.hitTest(worldPt.x, worldPt.y, pointerType);
-        if (hitNode) {
+        if (hitNode && hitNode !== targetNode) {
           this.engine.selectNode(hitNode);
+          targetNode = hitNode;
         }
-        if (this.engine.selectedNode) {
+
+        // Se há um nó selecionado, qualquer clique/arrasto (nas alças de ancoragem ou no corpo) gira o objeto
+        if (targetNode) {
           this._interactionMode = 'rotate-node';
-          this._rotateCenter = this.engine.selectedNode.getCenter();
-          this._initialNodeRotation = this.engine.selectedNode.rotation || 0;
+          this._rotateCenter = targetNode.getCenter();
+          this._initialNodeRotation = targetNode.rotation || 0;
           this._dragStartAngle =
             Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
             (180 / Math.PI);
           this._updateCursor(tool, 'crosshair');
+          this.engine.requestRender();
           return;
         }
       }
@@ -589,22 +597,23 @@ export class CortexWorkspace extends CortexElement {
       }
 
       // Se já houver um objeto selecionado, verifica primeiro se clicou/tocou em uma Alça (Handle)
-      if (this.engine.selectedNode) {
+      if (this.engine.selectedNode && tool !== 'rotate') {
         const handle = this.engine.selectedNode.hitTestHandle(
           worldPt.x,
           worldPt.y,
           this.engine.zoomScale,
-          pointerType
+          pointerType,
+          false
         );
         if (handle) {
-          if (handle.id === 'rotate') {
+          if (handle.id === 'rotate' || handle.isRotate) {
             this._interactionMode = 'rotate-node';
             this._rotateCenter = this.engine.selectedNode.getCenter();
             this._initialNodeRotation = this.engine.selectedNode.rotation || 0;
             this._dragStartAngle =
               Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
               (180 / Math.PI);
-            this._updateCursor(tool, 'grab');
+            this._updateCursor(tool, 'crosshair');
             return;
           }
 
@@ -762,13 +771,15 @@ export class CortexWorkspace extends CortexElement {
         return;
       }
 
-      // Hover sobre alças de redimensionamento quando em repouso
+      // Hover sobre alças de redimensionamento / rotação quando em repouso
       if (!this._interactionMode && this.engine.selectedNode) {
+        const isRotateTool = AppState.get('activeTool') === 'rotate';
         const hoverHandle = this.engine.selectedNode.hitTestHandle(
           worldPt.x,
           worldPt.y,
           this.engine.zoomScale,
-          pointerType
+          pointerType,
+          isRotateTool
         );
         this._updateCursor(AppState.get('activeTool'), hoverHandle ? hoverHandle.cursor : null);
       }

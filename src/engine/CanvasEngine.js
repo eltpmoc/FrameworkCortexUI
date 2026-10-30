@@ -469,9 +469,10 @@ export class CanvasEngine {
       }
     }
 
-    // 8. Caixa de Seleção e Alças
+    // 8. Caixa de Seleção e Alças (seletor normal ou modo de rotação com pontos de ancoragem transformados)
     if (this.selectedNode && Number(this.selectedNode.page || 1) === activePageNum) {
-      this.selectedNode.drawSelection(ctx, this.zoomScale);
+      const isRotateMode = AppState.get('activeTool') === 'rotate';
+      this.selectedNode.drawSelection(ctx, this.zoomScale, isRotateMode);
     }
 
     ctx.restore();

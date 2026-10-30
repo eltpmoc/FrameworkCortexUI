@@ -444,6 +444,114 @@ export class CortexMenubar extends CortexElement {
           flex-shrink: 0 !important;
         }
 
+        /* Ícone da Aplicação Desktop (ex: "Id", "Cx", etc.) */
+        .app-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          border-radius: 3px;
+          background-color: #2c1320;
+          border: 1px solid #f43f5e;
+          color: #fb7185;
+          font-weight: 700;
+          font-size: 11px;
+          margin-right: 6px;
+          letter-spacing: -0.03em;
+          flex-shrink: 0;
+        }
+
+        .menu-list {
+          display: flex;
+          align-items: center;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          gap: 1px;
+        }
+
+        .menu-root-item {
+          position: relative;
+        }
+
+        .menu-trigger {
+          padding: 4px 8px;
+          border-radius: var(--radius-xs);
+          color: var(--text-primary);
+          font-size: var(--text-xs);
+          transition: background var(--transition-fast);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+        }
+
+        .menu-trigger:hover {
+          background-color: var(--bg-hover);
+        }
+
+        .menu-root-item.open .menu-trigger {
+          background-color: var(--accent-blue);
+          color: #ffffff;
+        }
+
+        /* Menu Suspenso (Dropdown Desktop Fiel à Referência — sobrepõe todas as janelas internas) */
+        .dropdown {
+          display: none;
+          position: absolute;
+          top: calc(100% + 2px);
+          left: 0;
+          min-width: 215px;
+          background-color: var(--bg-panel);
+          border: 1px solid var(--border-input);
+          border-radius: var(--radius-sm);
+          box-shadow: var(--shadow-dropdown);
+          padding: 4px 0;
+          list-style: none;
+          margin: 0;
+          z-index: 8500;
+        }
+
+        .menu-root-item.open .dropdown {
+          display: block;
+        }
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 6px 14px;
+          color: var(--text-primary);
+          font-size: var(--text-xs);
+          text-align: left;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+          background-color: var(--accent-blue);
+          color: #ffffff;
+        }
+
+        .shortcut {
+          font-family: var(--font-sans);
+          font-size: 11px;
+          color: var(--text-muted);
+          margin-left: 24px;
+        }
+
+        .dropdown-item:hover .shortcut {
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .divider {
+          height: 1px;
+          background-color: var(--border-subtle);
+          margin: 4px 0;
+        }
+
         .window-title {
           position: absolute !important;
           left: 50% !important;

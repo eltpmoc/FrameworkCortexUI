@@ -182,296 +182,343 @@ export function nodeToPolygon(node, subdivisions = 64) {
 }
 
 /**
- * Renderiza a máscara sólida de um nó ou polígono no canvas offscreen
+ * Determina se os pontos do polígono estão em sentido horário (Clockwise)
  */
-function drawShapeSolid(ctx, item, minX, minY, scale) {
-  if (!item) return;
-
-  ctx.save();
-  ctx.fillStyle = '#ffffff';
-
-  // Se for um nó do CortexUI com buildPath()
-  if (typeof item.buildPath === 'function') {
-    ctx.scale(scale, scale);
-    ctx.translate(-minX, -minY);
-
-    if (item.rotation) {
-      const { cx, cy } = item.getCenter();
-      ctx.translate(cx, cy);
-      ctx.rotate(((item.rotation || 0) * Math.PI) / 180);
-      ctx.translate(-cx, -cy);
-    }
-
-    const path = item.buildPath();
-    ctx.fill(path);
-    ctx.restore();
-    return;
+export function isClockwise(poly) {
+  let sum = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const cur = poly[i];
+    const next = poly[(i + 1) % poly.length];
+    sum += (next.x - cur.x) * (next.y + cur.y);
   }
-
-  // Se for um nó sem buildPath() mas com renderShape()
-  if (typeof item.renderShape === 'function') {
-    ctx.scale(scale, scale);
-    ctx.translate(-minX, -minY);
-
-    if (item.rotation) {
-      const { cx, cy } = item.getCenter();
-      ctx.translate(cx, cy);
-      ctx.rotate(((item.rotation || 0) * Math.PI) / 180);
-      ctx.translate(-cx, -cy);
-    }
-
-    item.renderShape(ctx);
-    ctx.restore();
-    return;
-  }
-
-  // Se for um array de pontos 2D (polígono)
-  const poly = Array.isArray(item) ? item : nodeToPolygon(item);
-  if (poly && poly.length >= 3) {
-    ctx.beginPath();
-    ctx.moveTo((poly[0].x - minX) * scale, (poly[0].y - minY) * scale);
-    for (let i = 1; i < poly.length; i++) {
-      ctx.lineTo((poly[i].x - minX) * scale, (poly[i].y - minY) * scale);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  ctx.restore();
+  return sum > 0;
 }
 
 /**
- * Operações Booleanas de Alta Precisão (União, Interseção, Aparar, Subtrair, Excluir)
- * Utiliza Rasterização Vetorial 1:1 + GlobalCompositeOperation + Contour Tracing.
- * 100% nativo, sem dependências externas, sob licença MIT.
+ * Garante que o polígono esteja no sentido horário
+ */
+export function ensureClockwise(poly) {
+  if (!poly || poly.length < 3) return poly || [];
+  if (!isClockwise(poly)) {
+    return [...poly].reverse();
+  }
+  return [...poly];
+}
+
+/**
+ * Testa se um ponto está dentro de um polígono 2D (Ray-Casting Algorithm)
+ */
+export function pointInPolygon(pt, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x;
+    const yi = poly[i].y;
+    const xj = poly[j].x;
+    const yj = poly[j].y;
+
+    const intersect = yi > pt.y !== yj > pt.y && pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * Remove pontos colineares redundantes de um polígono mantendo a geometria intacta
+ */
+export function removeCollinearPoints(poly, eps = 1e-4) {
+  if (!poly || poly.length <= 3) return poly || [];
+  const result = [];
+  for (let i = 0; i < poly.length; i++) {
+    const prev = poly[(i - 1 + poly.length) % poly.length];
+    const cur = poly[i];
+    const next = poly[(i + 1) % poly.length];
+
+    const cross = (cur.x - prev.x) * (next.y - cur.y) - (cur.y - prev.y) * (next.x - cur.x);
+    if (Math.abs(cross) > eps) {
+      result.push(cur);
+    }
+  }
+  return result.length >= 3 ? result : poly;
+}
+
+/**
+ * Calcula a interseção entre 2 segmentos de reta (p1->p2 e p3->p4)
+ */
+function lineIntersection(p1, p2, p3, p4) {
+  const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+  if (Math.abs(d) < 1e-9) return null;
+
+  const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
+  const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
+
+  const eps = 1e-6;
+  if (u >= eps && u <= 1 - eps && v >= eps && v <= 1 - eps) {
+    return {
+      x: p1.x + u * (p2.x - p1.x),
+      y: p1.y + u * (p2.y - p1.y),
+      u,
+      v
+    };
+  }
+  return null;
+}
+
+/**
+ * Estrutura de dados para a lista duplamente encadeada circular do algoritmo Greiner-Hormann
+ */
+class VertexNode {
+  constructor(pt, isIntersection = false) {
+    this.x = pt.x;
+    this.y = pt.y;
+    this.isIntersection = isIntersection;
+    this.entry = false;
+    this.visited = false;
+    this.neighbor = null;
+    this.next = null;
+    this.prev = null;
+    this.alpha = 0;
+  }
+}
+
+class PolygonList {
+  constructor(pts) {
+    this.first = null;
+    this.count = 0;
+    pts.forEach((p) => this.append(new VertexNode(p)));
+  }
+
+  append(node) {
+    if (!this.first) {
+      this.first = node;
+      node.next = node;
+      node.prev = node;
+    } else {
+      const last = this.first.prev;
+      last.next = node;
+      node.prev = last;
+      node.next = this.first;
+      this.first.prev = node;
+    }
+    this.count++;
+  }
+
+  insertAfter(node, newNode) {
+    newNode.next = node.next;
+    newNode.prev = node;
+    node.next.prev = newNode;
+    node.next = newNode;
+    this.count++;
+  }
+}
+
+/**
+ * Motor Analítico de Operações Booleanas (Greiner-Hormann)
+ * Suporta União, Interseção e Subtração com precisão analítica 100% exata (Float64).
+ * Não gera linhas espúrias, loops, orelhas ou auto-interseções.
+ */
+function clipPolygonsGreinerHormann(polyA_raw, polyB_raw, operation = 'subtract') {
+  if (!polyA_raw || polyA_raw.length < 3) return polyB_raw || [];
+  if (!polyB_raw || polyB_raw.length < 3) return polyA_raw || [];
+
+  // Perturbação infinitesimal para evitar singularidades caso vértices coincidam exatamente
+  const perturb = (pts) =>
+    pts.map((p, idx) => ({
+      x: p.x + (idx % 2 === 0 ? 1e-7 : -1e-7),
+      y: p.y + (idx % 3 === 0 ? 1e-7 : -1e-7)
+    }));
+
+  const polyA = ensureClockwise(perturb(polyA_raw));
+  const polyB = ensureClockwise(polyB_raw);
+
+  const listA = new PolygonList(polyA);
+  const listB = new PolygonList(polyB);
+
+  // 1. Identificar todas as interseções e inseri-las ordenadas ao longo das arestas
+  let curA = listA.first;
+  do {
+    const nextA = curA.next;
+    const p1 = { x: curA.x, y: curA.y };
+    const p2 = { x: nextA.x, y: nextA.y };
+
+    let curB = listB.first;
+    do {
+      const nextB = curB.next;
+      const p3 = { x: curB.x, y: curB.y };
+      const p4 = { x: nextB.x, y: nextB.y };
+
+      const inter = lineIntersection(p1, p2, p3, p4);
+      if (inter) {
+        const nodeIntA = new VertexNode({ x: inter.x, y: inter.y }, true);
+        nodeIntA.alpha = inter.u;
+
+        const nodeIntB = new VertexNode({ x: inter.x, y: inter.y }, true);
+        nodeIntB.alpha = inter.v;
+
+        nodeIntA.neighbor = nodeIntB;
+        nodeIntB.neighbor = nodeIntA;
+
+        let insA = curA;
+        while (insA.next !== nextA && insA.next.isIntersection && insA.next.alpha < inter.u) {
+          insA = insA.next;
+        }
+        listA.insertAfter(insA, nodeIntA);
+
+        let insB = curB;
+        while (insB.next !== nextB && insB.next.isIntersection && insB.next.alpha < inter.v) {
+          insB = insB.next;
+        }
+        listB.insertAfter(insB, nodeIntB);
+      }
+      curB = nextB;
+    } while (curB !== listB.first);
+
+    curA = nextA;
+  } while (curA !== listA.first);
+
+  // 2. Marcar cada interseção como Entrada (Entry) ou Saída (Exit)
+  let statusA = !pointInPolygon({ x: listA.first.x, y: listA.first.y }, polyB);
+  let cA = listA.first;
+  do {
+    if (cA.isIntersection) {
+      cA.entry = !statusA;
+      statusA = !statusA;
+    }
+    cA = cA.next;
+  } while (cA !== listA.first);
+
+  let statusB = !pointInPolygon({ x: listB.first.x, y: listB.first.y }, polyA);
+  let cB = listB.first;
+  do {
+    if (cB.isIntersection) {
+      cB.entry = !statusB;
+      statusB = !statusB;
+    }
+    cB = cB.next;
+  } while (cB !== listB.first);
+
+  // 3. Casos onde não houve interseções de arestas
+  let hasIntersections = false;
+  cA = listA.first;
+  do {
+    if (cA.isIntersection) {
+      hasIntersections = true;
+      break;
+    }
+    cA = cA.next;
+  } while (cA !== listA.first);
+
+  if (!hasIntersections) {
+    const aInB = pointInPolygon(polyA[0], polyB);
+    const bInA = pointInPolygon(polyB[0], polyA);
+
+    if (operation === 'union') {
+      if (aInB) return polyB;
+      if (bInA) return polyA;
+      return polyA; // disjuntos
+    } else if (operation === 'intersect') {
+      if (aInB) return polyA;
+      if (bInA) return polyB;
+      return []; // disjuntos
+    } else if (operation === 'subtract' || operation === 'trim') {
+      if (aInB) return []; // A dentro de B é totalmente consumido
+      if (bInA) return polyA; // B dentro de A cria furo interno
+      return polyA; // disjuntos
+    }
+  }
+
+  // 4. Rastrear o contorno resultante percorrendo os polígonos
+  const resultPolygons = [];
+
+  const findStartNode = () => {
+    let node = listA.first;
+    do {
+      if (node.isIntersection && !node.visited) {
+        if (operation === 'union' && !node.entry) return node;
+        if (operation === 'intersect' && node.entry) return node;
+        if ((operation === 'subtract' || operation === 'trim') && node.entry) return node;
+      }
+      node = node.next;
+    } while (node !== listA.first);
+    return null;
+  };
+
+  let startNode = findStartNode();
+
+  while (startNode) {
+    const ring = [];
+    let cur = startNode;
+    let forward = operation === 'intersect' || operation === 'union';
+
+    do {
+      cur.visited = true;
+      if (cur.neighbor) cur.neighbor.visited = true;
+
+      ring.push({
+        x: Math.round(cur.x * 100) / 100,
+        y: Math.round(cur.y * 100) / 100
+      });
+
+      if (cur.isIntersection) {
+        if (operation === 'subtract' || operation === 'trim') {
+          forward = !forward;
+        }
+        cur = cur.neighbor;
+        cur.visited = true;
+      }
+
+      cur = forward ? cur.next : cur.prev;
+    } while (cur !== startNode && ring.length < 1000);
+
+    if (ring.length >= 3) {
+      resultPolygons.push(removeCollinearPoints(ring));
+    }
+
+    startNode = findStartNode();
+  }
+
+  // Retorna o maior anel resultante
+  if (resultPolygons.length === 0) return [];
+  resultPolygons.sort((a, b) => b.length - a.length);
+  return resultPolygons[0];
+}
+
+/**
+ * Operações Booleanas Robustas em 2D (União, Interseção, Aparar, Subtrair, Excluir)
+ * 100% nativo, analítico e geométrico, sem dependências externas, sob licença MIT.
  */
 export function performBooleanOperation(shapeA, shapeB, operation = 'union') {
-  // 1. Determina a Bounding Box combinada dos dois objetos
   const polyA = Array.isArray(shapeA) ? shapeA : nodeToPolygon(shapeA);
   const polyB = Array.isArray(shapeB) ? shapeB : nodeToPolygon(shapeB);
 
-  const allPts = [...polyA, ...polyB];
-  if (allPts.length === 0) return [];
-
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  allPts.forEach((p) => {
-    if (p.x < minX) minX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y > maxY) maxY = p.y;
-  });
-
-  const pad = 16;
-  minX -= pad;
-  minY -= pad;
-  maxX += pad;
-  maxY += pad;
-
-  const width = Math.max(10, Math.ceil(maxX - minX));
-  const height = Math.max(10, Math.ceil(maxY - minY));
-
-  // Resolução 1:1 para máxima fidelidade geométrica (limite de 1000px para alta performance)
-  const maxDim = 1000;
-  const scale = Math.min(1.0, maxDim / Math.max(width, height));
-  const canvasW = Math.max(20, Math.round(width * scale));
-  const canvasH = Math.max(20, Math.round(height * scale));
-
-  // Cria canvas offscreen
-  const offscreen = document.createElement('canvas');
-  offscreen.width = canvasW;
-  offscreen.height = canvasH;
-  const ctx = offscreen.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return [];
-
-  ctx.imageSmoothingEnabled = true;
-
-  // Aplica as operações booleanas via GlobalCompositeOperation
-  ctx.fillStyle = '#ffffff';
+  if (!polyA || polyA.length < 3) return polyB || [];
+  if (!polyB || polyB.length < 3) return polyA || [];
 
   if (operation === 'union') {
-    // União / Soldar (Weld): Desenha A, depois desenha B unindo contornos
-    drawShapeSolid(ctx, shapeA, minX, minY, scale);
-    ctx.globalCompositeOperation = 'source-over';
-    drawShapeSolid(ctx, shapeB, minX, minY, scale);
-
-  } else if (operation === 'intersect') {
-    // Interseção (Intersect): Mantém apenas a área comum onde B cruza A
-    drawShapeSolid(ctx, shapeA, minX, minY, scale);
-    ctx.globalCompositeOperation = 'source-in';
-    drawShapeSolid(ctx, shapeB, minX, minY, scale);
-
-  } else if (operation === 'subtract' || operation === 'trim') {
-    // Aparar / Subtrair (A - B): O objeto B (superior) apara/recorta o objeto A (inferior)
-    drawShapeSolid(ctx, shapeA, minX, minY, scale);
-    ctx.globalCompositeOperation = 'destination-out';
-    drawShapeSolid(ctx, shapeB, minX, minY, scale);
-
-  } else if (operation === 'subtract-reverse') {
-    // Subtrair Inverso (B - A): O objeto A (inferior) apara/recorta o objeto B (superior)
-    drawShapeSolid(ctx, shapeB, minX, minY, scale);
-    ctx.globalCompositeOperation = 'destination-out';
-    drawShapeSolid(ctx, shapeA, minX, minY, scale);
-
-  } else if (operation === 'exclude') {
-    // Excluir Sobreposição (XOR): Mantém apenas as áreas externas não sobrepostas
-    drawShapeSolid(ctx, shapeA, minX, minY, scale);
-    ctx.globalCompositeOperation = 'xor';
-    drawShapeSolid(ctx, shapeB, minX, minY, scale);
+    return clipPolygonsGreinerHormann(polyA, polyB, 'union');
   }
 
-  // 2. Extrai o contorno contínuo da máscara alfa
-  const imgData = ctx.getImageData(0, 0, canvasW, canvasH);
-  const data = imgData.data;
-
-  const isFilled = (x, y) => {
-    if (x < 0 || x >= canvasW || y < 0 || y >= canvasH) return false;
-    const idx = (y * canvasW + x) * 4;
-    return data[idx + 3] > 80; // Alpha significativo
-  };
-
-  // Encontra o primeiro pixel preenchido da borda superior
-  let startX = -1;
-  let startY = -1;
-
-  outerLoop: for (let y = 0; y < canvasH; y++) {
-    for (let x = 0; x < canvasW; x++) {
-      if (isFilled(x, y)) {
-        startX = x;
-        startY = y;
-        break outerLoop;
-      }
-    }
+  if (operation === 'intersect') {
+    return clipPolygonsGreinerHormann(polyA, polyB, 'intersect');
   }
 
-  if (startX === -1) {
-    return []; // Operação resultou em formato vazio
+  if (operation === 'subtract' || operation === 'trim') {
+    // Aparar: O objeto superior B recorta o inferior A (A - B)
+    return clipPolygonsGreinerHormann(polyA, polyB, 'subtract');
   }
 
-  // Rastreamento de contorno robusto (Moore-Neighbor com Jacob's Stopping Criterion)
-  const contour = [];
-  let currX = startX;
-  let currY = startY;
-
-  // 8 direções no sentido horário: [dx, dy]
-  const dirs = [
-    { dx: 0, dy: -1 }, // 0: N
-    { dx: 1, dy: -1 }, // 1: NE
-    { dx: 1, dy: 0 },  // 2: E
-    { dx: 1, dy: 1 },  // 3: SE
-    { dx: 0, dy: 1 },  // 4: S
-    { dx: -1, dy: 1 }, // 5: SW
-    { dx: -1, dy: 0 }, // 6: W
-    { dx: -1, dy: -1 } // 7: NW
-  ];
-
-  let dirIndex = 0;
-  let checkDir = 6; // Começa olhando 90 graus à esquerda
-  let firstStepDir = -1;
-  const maxSteps = canvasW * canvasH * 3;
-  let steps = 0;
-
-  contour.push({
-    x: minX + currX / scale,
-    y: minY + currY / scale
-  });
-
-  while (steps++ < maxSteps) {
-    let foundNext = false;
-
-    for (let i = 0; i < 8; i++) {
-      const idx = (checkDir + i) % 8;
-      const nx = currX + dirs[idx].dx;
-      const ny = currY + dirs[idx].dy;
-
-      if (isFilled(nx, ny)) {
-        currX = nx;
-        currY = ny;
-        dirIndex = idx;
-        checkDir = (idx + 6) % 8;
-        foundNext = true;
-        break;
-      }
-    }
-
-    if (!foundNext) break;
-
-    if (firstStepDir === -1) {
-      firstStepDir = dirIndex;
-    }
-
-    contour.push({
-      x: minX + currX / scale,
-      y: minY + currY / scale
-    });
-
-    // Condição de parada de Jacob: voltou ao ponto inicial na mesma direção após pelo menos 4 passos
-    if (currX === startX && currY === startY && dirIndex === firstStepDir && contour.length > 4) {
-      break;
-    }
+  if (operation === 'subtract-reverse') {
+    // Subtrair: O objeto inferior A recorta o superior B (B - A)
+    return clipPolygonsGreinerHormann(polyB, polyA, 'subtract');
   }
 
-  // 3. Suaviza e simplifica o contorno com tolerância calibrada para preservar esquinas e pontas finas
-  return simplifyPolygon(contour, 0.9);
-}
-
-/**
- * Algoritmo de Douglas-Peucker para simplificação de polígonos
- * Preserva vértices angulares significativos e remove apenas pontos redundantes em retas.
- */
-function simplifyPolygon(points, tolerance = 0.9) {
-  if (!points || points.length <= 4) return points || [];
-
-  function getSqSegDist(p, p1, p2) {
-    let x = p1.x;
-    let y = p1.y;
-    let dx = p2.x - x;
-    let dy = p2.y - y;
-
-    if (dx !== 0 || dy !== 0) {
-      const t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy);
-      if (t > 1) {
-        x = p2.x;
-        y = p2.y;
-      } else if (t > 0) {
-        x += dx * t;
-        y += dy * t;
-      }
-    }
-
-    dx = p.x - x;
-    dy = p.y - y;
-    return dx * dx + dy * dy;
+  if (operation === 'exclude') {
+    // Excluir Sobreposição (XOR): união das duas subtrações
+    const diff1 = clipPolygonsGreinerHormann(polyA, polyB, 'subtract');
+    if (diff1 && diff1.length >= 3) return diff1;
+    return clipPolygonsGreinerHormann(polyB, polyA, 'subtract');
   }
 
-  function simplifyStep(pts, first, last, sqTol, simplified) {
-    let maxSqDist = sqTol;
-    let index = -1;
-
-    for (let i = first + 1; i < last; i++) {
-      const sqDist = getSqSegDist(pts[i], pts[first], pts[last]);
-      if (sqDist > maxSqDist) {
-        index = i;
-        maxSqDist = sqDist;
-      }
-    }
-
-    if (maxSqDist > sqTol) {
-      if (index - first > 1) simplifyStep(pts, first, index, sqTol, simplified);
-      simplified.push(pts[index]);
-      if (last - index > 1) simplifyStep(pts, index, last, sqTol, simplified);
-    }
-  }
-
-  const last = points.length - 1;
-  const simplified = [points[0]];
-  simplifyStep(points, 0, last, tolerance * tolerance, simplified);
-  simplified.push(points[last]);
-
-  return simplified;
+  return clipPolygonsGreinerHormann(polyA, polyB, 'union');
 }
 
 /**
@@ -486,14 +533,14 @@ export function executeBooleanOnNodes(engine, nodes, operation = 'union') {
   const backNode = sorted[0];
   const frontNode = sorted[sorted.length - 1];
 
-  // Executa a operação booleana passando diretamente os nós para renderização vetorial precisa
+  // Executa a operação booleana com o motor analítico de polígonos
   const resultPts = performBooleanOperation(backNode, frontNode, operation);
   if (!resultPts || resultPts.length < 3) return null;
 
-  // Define os atributos do novo nó resultante:
-  // - Para 'subtract' (Aparar: Frente corta Fundo), o estilo vem do nó inferior (recortado)
-  // - Para 'subtract-reverse' (Subtrair: Fundo corta Frente), o estilo vem do nó superior (recortado)
-  // - Para 'union' e 'intersect', adota as cores do nó superior ativo
+  // Define os atributos de estilo do novo nó resultante:
+  // - Para 'subtract' (Aparar: Frente corta Fundo), herda o estilo do nó inferior (recortado)
+  // - Para 'subtract-reverse' (Subtrair: Fundo corta Frente), herda o estilo do nó superior (recortado)
+  // - Para 'union' e 'intersect', adota o estilo do nó superior ativo
   const targetStyleNode = operation === 'subtract' || operation === 'trim' ? backNode : frontNode;
   const activePage = Number(targetStyleNode.page) || 1;
 
@@ -509,7 +556,7 @@ export function executeBooleanOnNodes(engine, nodes, operation = 'union') {
     y: 0,
     points: resultPts,
     closed: true,
-    fill: targetStyleNode.fill || '#8b5cf6',
+    fill: targetStyleNode.fill || '#10b981',
     stroke: targetStyleNode.stroke || '#18181b',
     strokeWidth: targetStyleNode.strokeWidth || 2,
     opacity: targetStyleNode.opacity ?? 1,

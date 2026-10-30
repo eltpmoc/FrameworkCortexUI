@@ -287,7 +287,7 @@ registerMessages({
     'inspector.noSelection': 'Nenhuma Seleção',
     'inspector.selected': 'Selecionado',
     'inspector.name': 'Nome',
-    'inspector.fill': 'Preench.',
+    'inspector.fill': 'Preenchimento',
     'inspector.stroke': 'Contorno',
     'inspector.document': 'Documento',
     'inspector.facingPages': 'Páginas Opostas',

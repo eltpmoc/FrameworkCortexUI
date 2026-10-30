@@ -177,7 +177,7 @@ export class CortexInspector extends CortexElement {
         </div>
 
         <!-- Preenchimento (Fill) e Contorno (Stroke) com <cortex-color-picker> Moderno -->
-        <div class="grid-2">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
           <cortex-color-picker
             id="picker-fill"
             label="${t('inspector.fill')}:"

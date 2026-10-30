@@ -299,25 +299,28 @@ export class CortexColorPicker extends CortexElement {
 
         .lbl {
           color: var(--text-muted);
-          font-size: 10px;
+          font-size: 11px;
           flex-shrink: 0;
         }
 
         .swatch-preview {
-          width: 16px;
-          height: 16px;
-          border-radius: 2px;
+          width: 18px;
+          height: 18px;
+          border-radius: 3px;
           border: 1px solid rgba(255, 255, 255, 0.35);
           flex-shrink: 0;
+          margin-left: auto;
         }
 
         .hex-readout {
           font-family: var(--font-mono);
-          font-size: 10px;
+          font-size: 11px;
           color: var(--text-primary);
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          min-width: 65px;
+          text-align: right;
         }
 
         /* Popover Flutuante Estilo Photoshop / Figma */

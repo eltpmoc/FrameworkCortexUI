@@ -69,11 +69,20 @@ export class CortexInspector extends CortexElement {
       if (node[prop] !== undefined) {
         if (input.type === 'checkbox') {
           input.checked = Boolean(node[prop]);
+        } else if (input.type === 'number' || input.type === 'range') {
+          const num = Number(node[prop]);
+          input.value = isNaN(num) ? 0 : num;
         } else {
           input.value = node[prop];
         }
       }
     });
+
+    const rotLabel = this.shadowRoot.getElementById('lbl-rotation-val');
+    if (rotLabel && node.rotation !== undefined) {
+      const rotNum = Number(node.rotation) || 0;
+      rotLabel.textContent = `${Math.round(rotNum)}°`;
+    }
 
     const opacityLabel = this.shadowRoot.getElementById('lbl-opacity-val');
     if (opacityLabel && node.opacity !== undefined) {
@@ -137,7 +146,7 @@ export class CortexInspector extends CortexElement {
         <div class="slider-group">
           <div class="row-between">
             <span class="prefix">Rotação / Ângulo</span>
-            <span class="val-readout">${Math.round(node.rotation || 0)}°</span>
+            <span class="val-readout" id="lbl-rotation-val">${Math.round(node.rotation || 0)}°</span>
           </div>
           <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px;">
             <input

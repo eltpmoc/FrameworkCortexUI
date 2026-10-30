@@ -14,7 +14,8 @@ export class CortexNode {
     this.y = Number(options.y ?? 0);
     this.width = Number(options.width ?? 100);
     this.height = Number(options.height ?? 100);
-    this.rotation = Number(options.rotation ?? 0);
+    this._rotation = Number(options.rotation ?? 0);
+    if (isNaN(this._rotation)) this._rotation = 0;
 
     this.fill = options.fill ?? '#10b981';
     this.stroke = options.stroke ?? '#18181b';
@@ -25,14 +26,22 @@ export class CortexNode {
     this.locked = Boolean(options.locked);
   }
 
+  get rotation() {
+    return this._rotation || 0;
+  }
+
+  set rotation(val) {
+    const num = Number(val);
+    this._rotation = isNaN(num) ? 0 : num;
+  }
+
   /**
    * Retorna o ponto central do objeto em coordenadas de mundo.
    */
   getCenter() {
-    return {
-      cx: this.x + this.width / 2,
-      cy: this.y + this.height / 2
-    };
+    const cx = this.x + this.width / 2;
+    const cy = this.y + this.height / 2;
+    return { cx, cy, x: cx, y: cy };
   }
 
   /**

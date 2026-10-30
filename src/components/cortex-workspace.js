@@ -416,11 +416,12 @@ export class CortexWorkspace extends CortexElement {
         // Se há um nó selecionado, qualquer clique/arrasto (nas alças de ancoragem ou no corpo) gira o objeto
         if (targetNode) {
           this._interactionMode = 'rotate-node';
-          this._rotateCenter = targetNode.getCenter();
-          this._initialNodeRotation = targetNode.rotation || 0;
-          this._dragStartAngle =
-            Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
-            (180 / Math.PI);
+          const center = targetNode.getCenter();
+          this._rotateCenter = center;
+          const cx = center.cx ?? center.x ?? 0;
+          const cy = center.cy ?? center.y ?? 0;
+          this._initialNodeRotation = Number(targetNode.rotation) || 0;
+          this._dragStartAngle = Math.atan2(worldPt.y - cy, worldPt.x - cx) * (180 / Math.PI);
           this._updateCursor(tool, 'crosshair');
           this.engine.requestRender();
           return;
@@ -608,11 +609,12 @@ export class CortexWorkspace extends CortexElement {
         if (handle) {
           if (handle.id === 'rotate' || handle.isRotate) {
             this._interactionMode = 'rotate-node';
-            this._rotateCenter = this.engine.selectedNode.getCenter();
-            this._initialNodeRotation = this.engine.selectedNode.rotation || 0;
-            this._dragStartAngle =
-              Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
-              (180 / Math.PI);
+            const center = this.engine.selectedNode.getCenter();
+            this._rotateCenter = center;
+            const cx = center.cx ?? center.x ?? 0;
+            const cy = center.cy ?? center.y ?? 0;
+            this._initialNodeRotation = Number(this.engine.selectedNode.rotation) || 0;
+            this._dragStartAngle = Math.atan2(worldPt.y - cy, worldPt.x - cx) * (180 / Math.PI);
             this._updateCursor(tool, 'crosshair');
             return;
           }
@@ -706,22 +708,32 @@ export class CortexWorkspace extends CortexElement {
 
       // Rotação Interativa de Objeto
       if (this._interactionMode === 'rotate-node' && this.engine.selectedNode) {
-        const currentAngle =
-          Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
-          (180 / Math.PI);
-        const deltaAngle = currentAngle - this._dragStartAngle;
-        let nextRot = (this._initialNodeRotation + deltaAngle) % 360;
-        if (nextRot < 0) nextRot += 360;
+        const cx =
+          this._rotateCenter?.cx ??
+          this._rotateCenter?.x ??
+          this.engine.selectedNode.x + this.engine.selectedNode.width / 2;
+        const cy =
+          this._rotateCenter?.cy ??
+          this._rotateCenter?.y ??
+          this.engine.selectedNode.y + this.engine.selectedNode.height / 2;
+        const currentAngle = Math.atan2(worldPt.y - cy, worldPt.x - cx) * (180 / Math.PI);
 
-        // Ao segurar Shift, trava em passos de 15 graus (0°, 15°, 30°, 45°, 90°, etc.)
-        if (e.shiftKey) {
-          nextRot = Math.round(nextRot / 15) * 15;
+        if (!isNaN(currentAngle) && !isNaN(this._dragStartAngle)) {
+          const deltaAngle = currentAngle - this._dragStartAngle;
+          let nextRot = ((this._initialNodeRotation || 0) + deltaAngle) % 360;
+          if (nextRot < 0) nextRot += 360;
+
+          // Ao segurar Shift, trava em passos de 15 graus (0°, 15°, 30°, 45°, 90°, etc.)
+          if (e.shiftKey) {
+            nextRot = Math.round(nextRot / 15) * 15;
+          }
+
+          const finalRot = Math.round(nextRot) % 360;
+          this.engine.selectedNode.rotation = finalRot;
+          this._didModifyScene = true;
+          AppState.setState({ selectedNode: this.engine.selectedNode.toJSON() });
+          this.engine.requestRender();
         }
-
-        this.engine.selectedNode.rotation = Math.round(nextRot) % 360;
-        this._didModifyScene = true;
-        AppState.setState({ selectedNode: this.engine.selectedNode.toJSON() });
-        this.engine.requestRender();
         return;
       }
 

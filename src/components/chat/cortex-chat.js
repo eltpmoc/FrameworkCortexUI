@@ -2,52 +2,29 @@
 import { CortexElement } from '../../core/CortexElement.js';
 import { CortexModal } from '../cortex-modal.js';
 
-// Avatar SVG padrão de alta qualidade para o Atendente de Suporte (estilo profissional da imagem de referência)
-const DEFAULT_AGENT_AVATAR = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <defs>
-    <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="%23e0e7ff"/>
-      <stop offset="100%" stop-color="%23c7d2fe"/>
-    </linearGradient>
-    <linearGradient id="skinG" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="%23fed7aa"/>
-      <stop offset="100%" stop-color="%23fbbd79"/>
-    </linearGradient>
-    <linearGradient id="hairG" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="%237c2d12"/>
-      <stop offset="100%" stop-color="%23431407"/>
-    </linearGradient>
-    <linearGradient id="suitG" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="%233b82f6"/>
-      <stop offset="100%" stop-color="%231d4ed8"/>
-    </linearGradient>
-  </defs>
-  <circle cx="60" cy="60" r="60" fill="url(%23bgG)"/>
-  <!-- Cabelo fundo -->
-  <circle cx="60" cy="46" r="28" fill="url(%23hairG)"/>
-  <!-- Corpo / Camisa -->
-  <path d="M 18 114 C 20 85, 42 78, 60 78 C 78 78, 100 85, 102 114 Z" fill="url(%23suitG)"/>
-  <polygon points="60,82 50,78 52,106 60,114 68,106 70,78" fill="%23ffffff"/>
-  <polygon points="60,86 56,104 60,114 64,104" fill="%230284c7"/>
-  <!-- Cabeça e pescoço -->
-  <rect x="52" y="62" width="16" height="20" rx="4" fill="url(%23skinG)"/>
-  <ellipse cx="60" cy="50" rx="20" ry="24" fill="url(%23skinG)"/>
-  <!-- Orelhas -->
-  <circle cx="39" cy="51" r="5" fill="url(%23skinG)"/>
-  <circle cx="81" cy="51" r="5" fill="url(%23skinG)"/>
-  <!-- Cabelo topo -->
-  <path d="M 38 46 C 38 30, 52 24, 60 24 C 72 24, 82 31, 82 46 C 76 38, 68 38, 60 38 C 50 38, 44 41, 38 46 Z" fill="url(%23hairG)"/>
-  <!-- Olhos e Sobrancelhas -->
-  <ellipse cx="52" cy="48" rx="2.2" ry="2.6" fill="%231e293b"/>
-  <ellipse cx="68" cy="48" rx="2.2" ry="2.6" fill="%231e293b"/>
-  <path d="M 47 43 Q 52 41 57 43" stroke="%23431407" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M 63 43 Q 68 41 73 43" stroke="%23431407" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <!-- Nariz e Boca Sorrindo -->
-  <path d="M 60 48 L 59 55 L 63 55" stroke="%23ea580c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M 52 61 Q 60 68 68 61" stroke="%23be123c" stroke-width="2" stroke-linecap="round" fill="none"/>
-</svg>`;
+/**
+ * Retorna o caminho correto para as fotos da pasta img/docs (pessoa1.jpg ... pessoa12.jpg)
+ * Compatível tanto com servidor web HTTP (localhost:3000/, /docs, /cortex-ui/)
+ * quanto com abertura direta via arquivo local (file://).
+ */
+export function getChatPersonPhoto(index = 1) {
+  if (typeof window !== 'undefined' && window.location) {
+    const loc = (window.location.pathname || '').replace(/\\/g, '/');
+    if (window.location.protocol === 'file:') {
+      if (loc.includes('/docs/')) {
+        return `../img/docs/pessoa${index}.jpg`;
+      }
+      return `./img/docs/pessoa${index}.jpg`;
+    }
+    if (loc.includes('/cortex-ui/')) {
+      return `/cortex-ui/img/docs/pessoa${index}.jpg`;
+    }
+    return `/img/docs/pessoa${index}.jpg`;
+  }
+  return `/img/docs/pessoa${index}.jpg`;
+}
 
-// Histórico de mensagens inicial fiel à imagem do usuário
+// Histórico de mensagens inicial fiel à imagem de referência do usuário
 function getInitialMessages() {
   return [
     {
@@ -115,7 +92,7 @@ function getInitialMessages() {
  */
 export class CortexChat extends CortexElement {
   static get observedAttributes() {
-    return ['model', 'title', 'theme-mode'];
+    return ['model', 'title', 'theme-mode', 'person-index'];
   }
 
   constructor() {
@@ -123,17 +100,22 @@ export class CortexChat extends CortexElement {
     this._model = this.getAttribute('model') || 'photo'; // 'photo' | 'initials'
     this._chatTitle = this.getAttribute('title') || (this._model === 'photo' ? 'Support Chat (Photo Avatar)' : 'Support Chat (Initials Monogram)');
     
+    const photoIdx = parseInt(this.getAttribute('person-index') || '1', 10) || 1;
+
     this._currentUser = {
       id: 'john-doe',
       name: 'John Doe',
-      initials: 'JD'
+      initials: 'JD',
+      photoIndex: 2,
+      avatarUrl: getChatPersonPhoto(2)
     };
 
     this._agentUser = {
       id: 'support-agent',
       name: 'Support Agent',
       initials: 'SA',
-      avatarUrl: DEFAULT_AGENT_AVATAR
+      photoIndex: photoIdx,
+      avatarUrl: getChatPersonPhoto(photoIdx)
     };
 
     this._messages = getInitialMessages();
@@ -166,6 +148,11 @@ export class CortexChat extends CortexElement {
       this.render();
     } else if (name === 'title') {
       this._chatTitle = newVal;
+      this.render();
+    } else if (name === 'person-index') {
+      const idx = parseInt(newVal, 10) || 1;
+      this._agentUser.photoIndex = idx;
+      this._agentUser.avatarUrl = getChatPersonPhoto(idx);
       this.render();
     }
   }
@@ -260,7 +247,6 @@ export class CortexChat extends CortexElement {
 
   _toggleRecording() {
     if (this._isRecording) {
-      // Finaliza a gravação simulada de áudio
       clearInterval(this._recordTimer);
       this._isRecording = false;
       const duration = this._recordSeconds || 3;
@@ -282,7 +268,6 @@ export class CortexChat extends CortexElement {
       CortexModal.toast(`🎙️ Áudio enviado (${audioMsg.duration})`, 'info', 1800);
       this._simulateAgentReply('áudio gravado');
     } else {
-      // Inicia a gravação simulada
       this._isRecording = true;
       this._recordSeconds = 0;
       this.render();
@@ -328,23 +313,82 @@ export class CortexChat extends CortexElement {
     CortexModal.toast('Histórico restaurado para os dados originais da imagem!', 'success');
   }
 
-  _changeAgentPhoto() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (re) => {
-          this._agentUser.avatarUrl = re.target.result;
-          this.render();
-          CortexModal.toast('Foto do Atendente atualizada com sucesso!', 'success');
-        };
-        reader.readAsDataURL(file);
+  /**
+   * Abre seletor com as 12 pessoas da pasta img/docs/
+   */
+  _openPersonPickerModal() {
+    const peopleList = Array.from({ length: 12 }, (_, i) => i + 1);
+    const content = `
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="font-size: 12.5px; color: var(--text-secondary, #64748b);">
+          Selecione uma das fotos reais da pasta <strong>img/docs</strong> (pessoa1 a pessoa12) para o Atendente de Suporte:
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 280px; overflow-y: auto; padding: 4px;">
+          ${peopleList.map(idx => `
+            <div 
+              class="person-pick-item" 
+              data-person-idx="${idx}"
+              style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px; border-radius: 8px; cursor: pointer; border: 2px solid ${this._agentUser.photoIndex === idx ? 'var(--accent-blue, #2563eb)' : 'transparent'}; background: var(--bg-hover, #f8fafc); transition: all 0.15s ease;"
+            >
+              <img 
+                src="${getChatPersonPhoto(idx)}" 
+                alt="Pessoa ${idx}"
+                onerror="this.src='/cortex-ui/img/docs/pessoa${idx}.jpg'"
+                style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+              />
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-primary, #0f172a);">Pessoa ${idx}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div style="border-top: 1px solid var(--border-subtle, #e2e8f0); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="doc-btn" id="modal-upload-custom" style="padding: 6px 12px; font-size: 11.5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary); cursor: pointer;">
+            📁 Carregar foto personalizada...
+          </button>
+        </div>
+      </div>
+    `;
+
+    CortexModal.show({
+      title: 'Selecione a Foto do Atendente (img/docs)',
+      content: content,
+      buttons: [
+        { label: 'Fechar', action: 'close', type: 'secondary' }
+      ],
+      onOpen: (modalEl) => {
+        const items = modalEl.querySelectorAll('.person-pick-item');
+        items.forEach(it => {
+          it.addEventListener('click', () => {
+            const idx = parseInt(it.dataset.personIdx, 10);
+            this._agentUser.photoIndex = idx;
+            this._agentUser.avatarUrl = getChatPersonPhoto(idx);
+            this.render();
+            CortexModal.close();
+            CortexModal.toast(`Foto alterada para Pessoa ${idx} da pasta img/docs!`, 'success');
+          });
+        });
+
+        const customBtn = modalEl.querySelector('#modal-upload-custom');
+        customBtn?.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (re) => {
+                this._agentUser.avatarUrl = re.target.result;
+                this.render();
+                CortexModal.close();
+                CortexModal.toast('Foto personalizada carregada!', 'success');
+              };
+              reader.readAsDataURL(file);
+            }
+          };
+          input.click();
+        });
       }
-    };
-    input.click();
+    });
   }
 
   render() {
@@ -363,6 +407,8 @@ export class CortexChat extends CortexElement {
       }
       currentGroup.messages.push(msg);
     });
+
+    const agentPhotoSrc = this._agentUser.avatarUrl || getChatPersonPhoto(this._agentUser.photoIndex || 1);
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -520,6 +566,9 @@ export class CortexChat extends CortexElement {
           position: relative;
           cursor: pointer;
           margin-top: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .avatar-img {
@@ -530,9 +579,10 @@ export class CortexChat extends CortexElement {
           display: block;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
           border: 1px solid rgba(0, 0, 0, 0.08);
+          background-color: #e2e8f0;
         }
 
-        /* Avatar com Iniciais (Modelo 2) */
+        /* Avatar com Iniciais (Modelo 2 ou fallback) */
         .initials-avatar {
           width: 36px;
           height: 36px;
@@ -605,9 +655,9 @@ export class CortexChat extends CortexElement {
 
         /* Balão Azul Suave (Enviado pelo usuário no Modelo 1 / Resposta no Modelo 2) */
         .bubble-blue {
-          background: rgba(59, 130, 246, 0.12);
+          background: rgba(59, 130, 246, 0.14);
           color: var(--text-primary, #0f172a);
-          border: 1px solid rgba(59, 130, 246, 0.24);
+          border: 1px solid rgba(59, 130, 246, 0.28);
           border-top-right-radius: 3px;
         }
 
@@ -803,7 +853,7 @@ export class CortexChat extends CortexElement {
         </div>
         <div class="header-actions">
           ${isPhotoModel ? `
-            <button class="mini-btn" id="btn-change-photo" title="Trocar Foto do Atendente">&#128247; Foto</button>
+            <button class="mini-btn" id="btn-change-photo" title="Trocar Foto da Pasta img/docs">&#128247; Foto (${this._agentUser.photoIndex ? 'Pessoa ' + this._agentUser.photoIndex : 'Custom'})</button>
           ` : ''}
           <button class="mini-btn" id="btn-switch-model" title="Alternar entre Modelo Foto e Iniciais">
             &#8644; ${isPhotoModel ? 'Ver Iniciais' : 'Ver Foto'}
@@ -829,7 +879,13 @@ export class CortexChat extends CortexElement {
                 return `
                   <div class="message-row row-agent">
                     <div class="avatar-container" title="Atendente de Suporte (Clique para trocar foto)">
-                      <img class="avatar-img" src="${this._agentUser.avatarUrl}" alt="${m.senderName}" />
+                      <img 
+                        class="avatar-img" 
+                        src="${agentPhotoSrc}" 
+                        alt="${m.senderName}"
+                        onerror="if (!this.dataset.fb) { this.dataset.fb = '1'; this.src = '/cortex-ui/img/docs/pessoa1.jpg'; } else if (this.dataset.fb === '1') { this.dataset.fb = '2'; this.src = './img/docs/pessoa1.jpg'; } else { this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex'; }"
+                      />
+                      <div class="initials-avatar" style="display: none;">${this._agentUser.initials}</div>
                     </div>
                     <div class="message-content">
                       <div class="message-meta">
@@ -915,7 +971,13 @@ export class CortexChat extends CortexElement {
           <div class="message-row ${isPhotoModel ? 'row-agent' : 'row-agent'}">
             ${isPhotoModel ? `
               <div class="avatar-container">
-                <img class="avatar-img" src="${this._agentUser.avatarUrl}" alt="Digitando..." />
+                <img 
+                  class="avatar-img" 
+                  src="${agentPhotoSrc}" 
+                  alt="Digitando..." 
+                  onerror="if (!this.dataset.fb) { this.dataset.fb = '1'; this.src = '/cortex-ui/img/docs/pessoa1.jpg'; } else { this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex'; }"
+                />
+                <div class="initials-avatar" style="display: none;">${this._agentUser.initials}</div>
               </div>
             ` : ''}
             <div class="message-content">
@@ -991,7 +1053,6 @@ export class CortexChat extends CortexElement {
       if (sendBtn) {
         sendBtn.classList.toggle('has-text', Boolean(this._inputText.trim()));
       }
-      // Ajusta altura dinamicamente
       textarea.style.height = 'auto';
       textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     });
@@ -1029,11 +1090,11 @@ export class CortexChat extends CortexElement {
     });
 
     changePhotoBtn?.addEventListener('click', () => {
-      this._changeAgentPhoto();
+      this._openPersonPickerModal();
     });
 
     avatarClick?.addEventListener('click', () => {
-      this._changeAgentPhoto();
+      this._openPersonPickerModal();
     });
   }
 }
@@ -1162,7 +1223,7 @@ export class CortexChatShowcase extends CortexElement {
           <span class="showcase-badge">Design Nativo & 12 Temas</span>
         </div>
         <div style="font-size: 12px; color: var(--text-muted, #64748b);">
-          Modelo 1 (Foto do Atendente) vs. Modelo 2 (Iniciais Monograma JD)
+          Modelo 1 (Foto do Atendente - img/docs) vs. Modelo 2 (Iniciais Monograma JD)
         </div>
       </div>
 
@@ -1172,7 +1233,7 @@ export class CortexChatShowcase extends CortexElement {
             <span>Modelo 1: Com Imagem / Foto do Atendente</span>
             <span style="font-size: 11px; color: var(--text-muted);">Foto à esquerda & Balão azul à direita</span>
           </div>
-          <cortex-chat model="photo" title="Suporte (Avatar com Foto)" style="flex: 1; display: flex; flex-direction: column;"></cortex-chat>
+          <cortex-chat model="photo" person-index="1" title="Suporte (Avatar com Foto)" style="flex: 1; display: flex; flex-direction: column;"></cortex-chat>
         </div>
 
         <div class="chat-column">

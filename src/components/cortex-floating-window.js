@@ -90,6 +90,26 @@ export class CortexFloatingWindow extends CortexElement {
   _renderWindowContent(win) {
     const nodes = AppState.get('sceneNodes') || [];
 
+    if (win.type === 'office-api') {
+      return `<cortex-office-api style="width: 100%; height: 100%; display: block; overflow: auto;"></cortex-office-api>`;
+    }
+
+    if (win.type === 'spreadsheet') {
+      return `<cortex-spreadsheet style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-spreadsheet>`;
+    }
+
+    if (win.type === 'rich-edit') {
+      return `<cortex-rich-edit style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-rich-edit>`;
+    }
+
+    if (win.type === 'file-manager') {
+      return `<cortex-file-manager style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-file-manager>`;
+    }
+
+    if (win.type === 'file-uploader') {
+      return `<cortex-file-uploader style="width: 100%; height: 100%; display: block; overflow: auto;"></cortex-file-uploader>`;
+    }
+
     if (win.type === 'datatable') {
       const q = this._gridQuery.trim().toLowerCase();
       const filteredNodes = nodes.filter(
@@ -221,6 +241,24 @@ export class CortexFloatingWindow extends CortexElement {
 
         .floating-win.tree-win {
           width: min(88vw, 310px);
+        }
+
+        .floating-win.doc-large-win {
+          width: min(95vw, 1040px);
+        }
+
+        .floating-win.doc-large-win .win-body {
+          max-height: 82vh;
+          height: 660px;
+        }
+
+        .floating-win.doc-medium-win {
+          width: min(92vw, 860px);
+        }
+
+        .floating-win.doc-medium-win .win-body {
+          max-height: 76vh;
+          height: 560px;
         }
 
         .win-header {
@@ -419,9 +457,13 @@ export class CortexFloatingWindow extends CortexElement {
 
       ${this._windows
         .map(
-          (win) => `
+          (win) => {
+            const isDocLarge = ['office-api', 'spreadsheet', 'rich-edit', 'file-manager'].includes(win.type);
+            const isDocMedium = win.type === 'file-uploader';
+            const extraClass = isDocLarge ? 'doc-large-win' : (isDocMedium ? 'doc-medium-win' : (win.type === 'tree' ? 'tree-win' : ''));
+            return `
         <div
-          class="floating-win ${win.type === 'tree' ? 'tree-win' : ''} ${this._activeWinId === win.id ? 'active-window' : 'inactive-window'}"
+          class="floating-win ${extraClass} ${this._activeWinId === win.id ? 'active-window' : 'inactive-window'}"
           data-win-id="${win.id}"
           style="left: ${win.x}px; top: ${win.y}px; z-index: ${win.zIndex || 1500};"
         >
@@ -436,7 +478,8 @@ export class CortexFloatingWindow extends CortexElement {
             ${this._renderWindowContent(win)}
           </div>
         </div>
-      `
+      `;
+          }
         )
         .join('')}
     `;

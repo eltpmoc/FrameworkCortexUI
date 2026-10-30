@@ -10,6 +10,7 @@ import './cortex-widgets.js';
 import './cortex-enterprise-views.js';
 import './cortex-planning-views.js';
 import './cortex-advanced-views.js';
+import './cortex-document-management.js';
 
 const DOC_SECTIONS = [
   {
@@ -693,6 +694,81 @@ inputTel.value = CortexMask.phone('11988776655');         // "(11) 98877-6655"`,
     ]
   },
   {
+    category: '📑 Document Management Suite (Office, Planilhas & Arquivos)',
+    items: [
+      {
+        id: 'doc-office-api',
+        title: '📄 Office File API (Word, Excel & PDF)',
+        tag: '<cortex-office-api>',
+        badge: 'Exportação Nativa MIT',
+        summary: 'Gerador e visualizador de documentos corporativos com modelos de Fatura Comercial (INVOICE com barcode Code 128 e assinatura) e Balanço Patrimonial, exportando nativamente para Word (.docx/.doc), Excel (.xlsx/.xls) e PDF.',
+        previewType: 'doc-office-api-preview',
+        code: `<cortex-office-api></cortex-office-api>`,
+        api: [
+          { name: 'exportToExcel()', type: 'Method', desc: 'Gera planilha XML Spreadsheet 2003 nativa com estilos e cálculos.' },
+          { name: 'exportToWord()', type: 'Method', desc: 'Gera documento HTML Word Document com cabeçalho MIME e download imediato.' },
+          { name: 'exportToPdf()', type: 'Method', desc: 'Dispara janela de impressão estilizada de alta resolução com @media print.' }
+        ]
+      },
+      {
+        id: 'doc-spreadsheet',
+        title: '📊 Spreadsheet (Planilha com Gráficos)',
+        tag: '<cortex-spreadsheet>',
+        badge: 'Ribbon + SVG Charts',
+        summary: 'Planilha eletrônica completa estilo Excel/Office 365 com abas Ribbon (Home, Insert, Formulas...), barra de fórmulas fx, grid matricial editável e dois gráficos vetoriais embutidos (Pie Chart e Horizontal Bar Chart).',
+        previewType: 'doc-spreadsheet-preview',
+        code: `<cortex-spreadsheet></cortex-spreadsheet>`,
+        api: [
+          { name: 'Ribbon Tabs', type: 'UI Component', desc: 'Abas superiores: Home, Insert, Formulas, Data, Review e View.' },
+          { name: 'Formula Bar', type: 'Interactive Bar', desc: 'Caixa de endereço da célula ativa e entrada de texto/fórmulas matemáticas.' },
+          { name: 'Embedded Charts', type: 'SVG Vectors', desc: 'Gráfico de pizza com legenda e gráfico de barras horizontais sobre o grid.' }
+        ]
+      },
+      {
+        id: 'doc-rich-edit',
+        title: '📝 Rich Edit (Processador de Texto A4)',
+        tag: '<cortex-rich-edit>',
+        badge: 'Ribbon + Captions',
+        summary: 'Processador de texto estilo Microsoft Word com Ribbon, dropdown funcional Insert Caption (Figures, Tables, Equations), régua graduada horizontal, folha A4 realista centralizada e sumário dinâmico.',
+        previewType: 'doc-rich-edit-preview',
+        code: `<cortex-rich-edit></cortex-rich-edit>`,
+        api: [
+          { name: 'insertCaption(type)', type: 'Method', desc: 'Insere legenda para Figures, Tables ou Equations.' },
+          { name: 'insertTableOfContents()', type: 'Method', desc: 'Gera sumário automático Table of Contents no documento.' },
+          { name: 'exportToWord()', type: 'Method', desc: 'Exporta o documento formatado para arquivo .doc/.docx.' }
+        ]
+      },
+      {
+        id: 'doc-file-manager',
+        title: '📁 File Manager (Gerenciador de Arquivos)',
+        tag: '<cortex-file-manager>',
+        badge: 'Tree + Table + Context Menu',
+        summary: 'Gerenciador de arquivos completo com árvore hierárquica lateral de pastas (Files > Cities, Contact, Landscapes, Portraits, Widescreen), tabela com checkboxes, modo Lista/Grade e menu de contexto funcional (Rename, Move to, Copy to, Delete, Download).',
+        previewType: 'doc-file-manager-preview',
+        code: `<cortex-file-manager></cortex-file-manager>`,
+        api: [
+          { name: '+ New directory', type: 'Action', desc: 'Cria nova pasta na árvore de diretórios.' },
+          { name: 'Upload files', type: 'Action', desc: 'Envia múltiplos arquivos para a pasta ativa.' },
+          { name: 'Context Menu', type: 'Dropdown', desc: 'Menu suspenso com Rename, Move to, Copy to, Delete e Download.' }
+        ]
+      },
+      {
+        id: 'doc-file-uploader',
+        title: '☁️ File Uploader (Carregador Drag & Drop 15 MB)',
+        tag: '<cortex-file-uploader>',
+        badge: 'Drag & Drop + Real-time Progress',
+        summary: 'Carregador de arquivos moderno com zona tracejada para arrastar e soltar arquivos reais, validação de limite de 15 MB, botão Remove All e lista dinâmica de uploads com porcentagem e barra de progresso azul em tempo real.',
+        previewType: 'doc-file-uploader-preview',
+        code: `<cortex-file-uploader></cortex-file-uploader>`,
+        api: [
+          { name: 'Dropzone', type: 'Drag & Drop Area', desc: 'Área com feedback visual ao arrastar arquivos do sistema operacional.' },
+          { name: 'Progress Bar', type: 'Animated Track', desc: 'Barra azul preenchendo a porcentagem em tempo real com indicador numérico.' },
+          { name: 'Remove All', type: 'Action Button', desc: 'Limpa a fila de arquivos da lista.' }
+        ]
+      }
+    ]
+  },
+  {
     category: '🪟 Janelas, Modais & Overlays',
     items: [
       {
@@ -1282,6 +1358,41 @@ export class CortexDocs extends CortexElement {
                 )
                 .join('')}
             </div>
+          </div>
+        `;
+
+      case 'doc-office-api-preview':
+        return `
+          <div style="max-height: 620px; overflow: auto; border: 1px solid var(--border-subtle); border-radius: 8px;">
+            <cortex-office-api></cortex-office-api>
+          </div>
+        `;
+
+      case 'doc-spreadsheet-preview':
+        return `
+          <div style="height: 520px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-spreadsheet></cortex-spreadsheet>
+          </div>
+        `;
+
+      case 'doc-rich-edit-preview':
+        return `
+          <div style="height: 580px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-rich-edit></cortex-rich-edit>
+          </div>
+        `;
+
+      case 'doc-file-manager-preview':
+        return `
+          <div style="height: 480px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-file-manager></cortex-file-manager>
+          </div>
+        `;
+
+      case 'doc-file-uploader-preview':
+        return `
+          <div style="max-height: 520px; overflow: auto; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; background: #fff;">
+            <cortex-file-uploader></cortex-file-uploader>
           </div>
         `;
 

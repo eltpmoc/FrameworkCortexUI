@@ -7,6 +7,7 @@ import { I18n, t, tx, setLanguage, getLanguage, toggleLanguage } from './core/i1
 import './components/cortex-widgets.js';
 import './components/cortex-enterprise-views.js';
 import './components/cortex-planning-views.js';
+import './components/cortex-document-management.js';
 import './components/cortex-menubar.js';
 import './components/cortex-tabbar.js';
 import './components/cortex-toolbar.js';
@@ -221,6 +222,7 @@ window.addEventListener('cortex-menu-action', async (e) => {
       break;
 
     case 'insert-table':
+    case 'open-datagrid-win':
       floatingWindowsEl?.openWindow({
         id: 'win-datagrid',
         title: 'Desktop Data Grid — Objetos do Documento',
@@ -229,10 +231,59 @@ window.addEventListener('cortex-menu-action', async (e) => {
       break;
 
     case 'open-tree':
+    case 'open-treeview-win':
       floatingWindowsEl?.openWindow({
         id: 'win-treeview',
         title: 'Scene TreeView Explorer',
         type: 'tree'
+      });
+      break;
+
+    case 'open-planning-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-planning',
+        title: 'CortexUI Schedulers, Kanban & Gantt',
+        type: 'planning'
+      });
+      break;
+
+    case 'open-office-api-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-office-api',
+        title: 'Office File API — Word, Excel & PDF (Faturas & Balanços)',
+        type: 'office-api'
+      });
+      break;
+
+    case 'open-spreadsheet-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-spreadsheet',
+        title: 'Cortex Spreadsheet — Planilha & Gráficos',
+        type: 'spreadsheet'
+      });
+      break;
+
+    case 'open-rich-edit-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-rich-edit',
+        title: 'Cortex Rich Edit — Processador de Texto A4',
+        type: 'rich-edit'
+      });
+      break;
+
+    case 'open-file-manager-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-file-manager',
+        title: 'Cortex File Manager — Gerenciador de Arquivos',
+        type: 'file-manager'
+      });
+      break;
+
+    case 'open-file-uploader-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-file-uploader',
+        title: 'Cortex File Uploader — Drag & Drop (15 MB)',
+        type: 'file-uploader'
       });
       break;
 

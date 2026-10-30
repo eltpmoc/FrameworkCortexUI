@@ -70,6 +70,18 @@ function getLocalizedMenus() {
       ]
     },
     {
+      id: 'documents',
+      label: t('menu.documents'),
+      items: [
+        { action: 'open-office-api-win', label: 'Office File API (Word, Excel & PDF)', shortcut: 'Ctrl+Alt+O' },
+        { action: 'open-spreadsheet-win', label: 'Spreadsheet (Planilha com Gráficos)', shortcut: 'Ctrl+Alt+S' },
+        { action: 'open-rich-edit-win', label: 'Rich Edit (Processador de Texto A4)', shortcut: 'Ctrl+Alt+R' },
+        { type: 'divider' },
+        { action: 'open-file-manager-win', label: 'File Manager (Gerenciador de Arquivos)', shortcut: 'Ctrl+Alt+F' },
+        { action: 'open-file-uploader-win', label: 'File Uploader (Upload Drag & Drop)', shortcut: 'Ctrl+Alt+U' }
+      ]
+    },
+    {
       id: 'view',
       label: t('menu.view'),
       items: [
@@ -106,6 +118,12 @@ function getLocalizedMenus() {
         { action: 'open-datagrid-win', label: 'Data Grid Window (MDI)', shortcut: 'Ctrl+Alt+D' },
         { action: 'open-treeview-win', label: 'Scene TreeView Window (MDI)', shortcut: 'Ctrl+Alt+T' },
         { action: 'open-planning-win', label: 'Schedulers, Kanban & Gantt Window', shortcut: 'Ctrl+Alt+P' },
+        { type: 'divider' },
+        { action: 'open-office-api-win', label: 'Office File API (Invoice, Excel & Word)', shortcut: '' },
+        { action: 'open-spreadsheet-win', label: 'Spreadsheet (Planilha com Gráficos)', shortcut: '' },
+        { action: 'open-rich-edit-win', label: 'Rich Edit (Editor de Texto Word A4)', shortcut: '' },
+        { action: 'open-file-manager-win', label: 'File Manager (Gerenciador de Arquivos)', shortcut: '' },
+        { action: 'open-file-uploader-win', label: 'File Uploader (Upload 15 MB)', shortcut: '' },
         { type: 'divider' },
         { action: 'toggle-left-dock', label: 'Toggle Tools Panel', shortcut: 'Tab' },
         { action: 'toggle-right-dock', label: 'Toggle Inspector Panel', shortcut: 'Shift+Tab' },

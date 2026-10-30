@@ -557,7 +557,7 @@ export class CortexMenubar extends CortexElement {
           left: 50% !important;
           top: 50% !important;
           transform: translate(-50%, -50%) !important;
-          color: #d1d5db !important;
+          color: var(--text-primary, #d1d5db) !important;
           font-size: 11.5px !important;
           font-weight: 600 !important;
           white-space: nowrap !important;
@@ -567,8 +567,8 @@ export class CortexMenubar extends CortexElement {
           pointer-events: none !important;
           max-width: 45vw !important;
           padding: 2px 14px !important;
-          background: rgba(255, 255, 255, 0.05) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          background: var(--bg-elevated, rgba(255, 255, 255, 0.05)) !important;
+          border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1)) !important;
           border-radius: 12px !important;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
           letter-spacing: 0.2px !important;

@@ -150,14 +150,46 @@ export class CortexStatusbar extends CortexElement {
 
         @media (max-width: 768px) {
           :host {
-            grid-template-columns: 1fr;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            box-sizing: border-box;
+            overflow: hidden;
           }
           .center-zone,
           .right-zone {
-            display: none;
+            display: none !important;
           }
           .left-zone {
+            display: flex;
+            align-items: center;
             justify-content: space-between;
+            width: 100%;
+            gap: 4px;
+          }
+          .control-cluster {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+          }
+          .v-sep {
+            margin: 0 4px;
+            flex-shrink: 0;
+          }
+          .step-btn {
+            width: 17px;
+            height: 17px;
+            font-size: 9px;
+            flex-shrink: 0;
+          }
+          .value-pill {
+            min-width: 22px;
+            height: 17px;
+            font-size: 10px;
+            padding: 0 4px;
+            flex-shrink: 0;
           }
         }
       </style>

@@ -722,16 +722,34 @@ export class CortexMenubar extends CortexElement {
           margin: 10px 0 4px;
         }
 
-        @media (max-width: 768px) {
-          :host {
-            grid-template-columns: auto 1fr auto;
+        /* Responsividade para Telas Menores e Médias */
+        @media (max-width: 980px) {
+          .window-title {
+            display: none !important;
           }
+        }
+
+        @media (max-width: 768px) {
           .menu-list,
-          .workspace-select {
-            display: none;
+          .workspace-select.layout-select,
+          .search-box,
+          [data-action="open-docs"] {
+            display: none !important;
           }
           .hamburger-btn {
-            display: inline-flex;
+            display: inline-flex !important;
+          }
+          .window-title {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 580px) {
+          [data-action="open-login"] {
+            display: none !important;
+          }
+          .workspace-select.theme-select {
+            max-width: 120px;
           }
         }
       </style>

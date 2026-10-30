@@ -149,6 +149,18 @@ export class CortexToolbar extends CortexElement {
       if (fillSwatch) fillSwatch.style.backgroundColor = AppState.get('fillColor');
       if (strokeSwatch) strokeSwatch.style.borderColor = AppState.get('strokeColor');
     });
+
+    // Rolagem horizontal via roda do mouse na doca mobile/telas pequenas
+    this.addEventListener(
+      'wheel',
+      (e) => {
+        if (window.innerWidth <= 768 && e.deltaY !== 0) {
+          this.scrollLeft += e.deltaY;
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
   }
 
   _updateActiveButton(activeTool) {
@@ -283,30 +295,65 @@ export class CortexToolbar extends CortexElement {
         @media (max-width: 768px) {
           :host {
             position: fixed;
-            bottom: calc(var(--statusbar-height, 28px) + 8px);
+            bottom: calc(var(--statusbar-height, 28px) + 6px);
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
             flex-direction: row;
-            width: auto;
-            max-width: 95vw;
-            height: auto;
-            padding: 4px 8px;
+            align-items: center;
+            justify-content: flex-start;
+            width: max-content;
+            max-width: calc(100vw - 16px);
+            height: 38px;
+            padding: 3px 8px;
             border: 1px solid var(--border-input);
             border-radius: var(--radius-pill, 9999px);
-            background-color: rgba(37, 37, 38, 0.94);
-            backdrop-filter: blur(12px);
-            box-shadow: var(--shadow-dropdown);
+            background-color: rgba(30, 30, 32, 0.95);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
             overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            touch-action: pan-x;
+            z-index: 500;
+          }
+
+          :host::-webkit-scrollbar {
+            display: none;
+          }
+
+          .tool-btn {
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            padding: 0;
+          }
+
+          .tool-btn svg {
+            width: 14px;
+            height: 14px;
           }
 
           .divider {
             width: 1px;
-            height: 20px;
-            margin: 0 3px;
+            height: 18px;
+            margin: 0 2px;
+            flex-shrink: 0;
           }
 
           .color-swatches {
+            width: 22px;
+            height: 22px;
             margin: 0 4px;
+            flex-shrink: 0;
+          }
+
+          .swatch-fill,
+          .swatch-stroke {
+            width: 13px;
+            height: 13px;
           }
         }
       </style>

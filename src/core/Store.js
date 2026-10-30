@@ -113,6 +113,13 @@ class CortexStore {
       });
     };
   }
+
+  /**
+   * Alias amigável de conveniência para subscribe()
+   */
+  watch(keyOrKeys, callback) {
+    return this.subscribe(keyOrKeys, callback);
+  }
 }
 
 const savedTheme =

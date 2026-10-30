@@ -47,14 +47,8 @@ export class CortexInspector extends CortexElement {
 
     // Two-Way Data Binding: Se trocou o ID selecionado, re-renderiza;
     // se é o mesmo objeto sendo arrastado/editado em 60 FPS, atualiza apenas os valores dos inputs!
-    this.watchState('selectedNode', (node) => {
-      const nextId = node ? node.id : null;
-      if (nextId !== this._lastRenderedNodeId) {
-        this._lastRenderedNodeId = nextId;
-        this.render();
-      } else if (node) {
-        this._patchLiveInputs(node);
-      }
+    this.watchState(['selectedNode', 'selectedNodes'], (node) => {
+      this.render();
     });
   }
 
@@ -96,6 +90,61 @@ export class CortexInspector extends CortexElement {
   }
 
   _renderObjectPropertiesSection(node) {
+    const selectedNodes = AppState.get('selectedNodes') || [];
+    if (selectedNodes.length > 1) {
+      return `
+        <div class="section-group highlight-box">
+          <div class="row-between">
+            <span class="section-title" style="color: var(--accent-text); font-weight: 700;">
+              SELEÇÃO MÚLTIPLA (${selectedNodes.length} OBJETOS)
+            </span>
+            <span class="badge-z">Z: Multi</span>
+          </div>
+
+          <!-- Operações Booleanas (Modelagem CorelDraw) -->
+          <div class="section-title" style="font-size: 10.5px; margin-top: 4px; color: var(--text-secondary);">Modelagem & Combinação</div>
+          <div class="grid-2">
+            <button class="btn-primary" data-inspector-action="boolean-union" title="União / Soldar (Weld): Combina os objetos em um contorno único">
+              ⚡ União
+            </button>
+            <button class="btn-primary" data-inspector-action="boolean-intersect" title="Interseção (Intersect): Mantém a área de sobreposição comum">
+              ⚡ Interseção
+            </button>
+            <button class="btn-secondary" data-inspector-action="boolean-subtract" title="Aparar (Trim / Subtract): O objeto superior apara o inferior">
+              Aparar
+            </button>
+            <button class="btn-secondary" data-inspector-action="boolean-exclude" title="Excluir Sobreposição (Exclude / XOR)">
+              Excluir
+            </button>
+          </div>
+
+          <!-- Alinhamentos de Design -->
+          <div class="section-title" style="font-size: 10.5px; margin-top: 6px; color: var(--text-secondary);">Alinhamento de Objetos</div>
+          <div class="grid-3">
+            <button class="btn-secondary" data-inspector-action="align-left" title="Alinhar à Esquerda">⇤ Esq</button>
+            <button class="btn-secondary" data-inspector-action="align-center-h" title="Centralizar Horizontalmente">⇹ Centro</button>
+            <button class="btn-secondary" data-inspector-action="align-right" title="Alinhar à Direita">⇥ Dir</button>
+            <button class="btn-secondary" data-inspector-action="align-top" title="Alinhar ao Topo">⤒ Topo</button>
+            <button class="btn-secondary" data-inspector-action="align-center-v" title="Centralizar Verticalmente">⇕ Meio</button>
+            <button class="btn-secondary" data-inspector-action="align-bottom" title="Alinhar ao Fundo">⤓ Fundo</button>
+          </div>
+
+          <!-- Distribuição -->
+          <div class="section-title" style="font-size: 10.5px; margin-top: 6px; color: var(--text-secondary);">Distribuição</div>
+          <div class="grid-2">
+            <button class="btn-secondary" data-inspector-action="distribute-h">↔ Distribuir H</button>
+            <button class="btn-secondary" data-inspector-action="distribute-v">↕ Distribuir V</button>
+          </div>
+
+          <!-- Ações Rápidas em Massa -->
+          <div class="grid-2" style="margin-top: 4px;">
+            <button class="btn-secondary" data-inspector-action="duplicate">📋 Duplicar Todos</button>
+            <button class="btn-secondary" data-inspector-action="delete" style="color: #ef4444;">🗑️ Excluir Todos</button>
+          </div>
+        </div>
+      `;
+    }
+
     if (!node) {
       return `<div class="selection-banner">${t('inspector.noSelection')}</div>`;
     }
@@ -1014,6 +1063,13 @@ export class CortexInspector extends CortexElement {
             inspectorCollapsed: isSameTab
           });
         }
+      });
+    });
+
+    // Ações de Multi-Seleção e Modelagem disparadas pelo Inspector
+    this.shadowRoot.querySelectorAll('[data-inspector-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.emit('cortex-inspector-action', { action: btn.dataset.inspectorAction });
       });
     });
 

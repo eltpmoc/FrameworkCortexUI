@@ -58,6 +58,11 @@ function getLocalizedMenus() {
         { action: 'add-rect', label: t('menu.insertRect'), shortcut: 'M' },
         { action: 'add-line', label: t('menu.insertLine'), shortcut: 'L' },
         { type: 'divider' },
+        { action: 'boolean-union', label: 'União / Soldar Formas (Weld)', shortcut: 'Ctrl+Shift+U' },
+        { action: 'boolean-intersect', label: 'Interseção de Formas (Intersect)', shortcut: 'Ctrl+Shift+I' },
+        { action: 'boolean-subtract', label: 'Aparar / Subtração (Trim)', shortcut: '' },
+        { action: 'boolean-exclude', label: 'Excluir Sobreposição (Exclude)', shortcut: '' },
+        { type: 'divider' },
         { action: 'bring-front', label: t('menu.bringFront'), shortcut: 'Ctrl+]' },
         { action: 'send-back', label: t('menu.sendBack'), shortcut: 'Ctrl+[' }
       ]

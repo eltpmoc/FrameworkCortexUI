@@ -65,6 +65,13 @@ window.addEventListener('cortex-quick-action', (e) => {
   }
 });
 
+// Ações de Modelagem e Multi-Seleção (CorelDraw style) disparadas pelo Inspector
+window.addEventListener('cortex-inspector-action', (e) => {
+  const { action } = e.detail;
+  if (!workspaceEl) return;
+  workspaceEl._executeSelectionToolbarAction(action);
+});
+
 // Two-Way Data Binding Manual (Inspector / Color Picker / Font Picker / Layers -> CanvasEngine em 60 FPS)
 window.addEventListener('cortex-update-property', (e) => {
   if (!workspaceEl?.engine) return;
@@ -310,6 +317,22 @@ window.addEventListener('cortex-menu-action', async (e) => {
         title: 'Cortex Chats Showcase — Modelo 1 (Foto) & Modelo 2 (Iniciais)',
         type: 'chat-showcase'
       });
+      break;
+
+    case 'boolean-union':
+      workspaceEl?._executeSelectionToolbarAction('union');
+      break;
+
+    case 'boolean-intersect':
+      workspaceEl?._executeSelectionToolbarAction('intersect');
+      break;
+
+    case 'boolean-subtract':
+      workspaceEl?._executeSelectionToolbarAction('subtract');
+      break;
+
+    case 'boolean-exclude':
+      workspaceEl?._executeSelectionToolbarAction('exclude');
       break;
 
     case 'add-page': {

@@ -15,6 +15,11 @@ import {
   CortexArrow,
   CortexCallout
 } from '../engine/nodes/index.js';
+import {
+  executeBooleanOnNodes,
+  alignSelectedNodes,
+  distributeSelectedNodes
+} from '../engine/BooleanOperations.js';
 import { CortexModal } from './cortex-modal.js';
 
 export class CortexWorkspace extends CortexElement {
@@ -42,6 +47,8 @@ export class CortexWorkspace extends CortexElement {
     this._draftNode = null;
     this._isSpacePressed = false;
     this._didModifyScene = false;
+    this._initialNodesPositions = [];
+    this._marqueeInitialSelected = [];
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._onKeyUp = this._onKeyUp.bind(this);
@@ -129,6 +136,11 @@ export class CortexWorkspace extends CortexElement {
     this.watchState('activeTool', (tool) => {
       this._updateCursor(tool);
       this.engine?.requestRender();
+      this._updateFloatingToolbar();
+    });
+
+    this.watchState(['selectedNode', 'selectedNodes'], () => {
+      this._updateFloatingToolbar();
     });
 
     this._bindStageEvents(stageCanvas);
@@ -162,9 +174,24 @@ export class CortexWorkspace extends CortexElement {
     if (e.code === 'Space' && !this._isSpacePressed) {
       this._isSpacePressed = true;
       this._updateCursor(AppState.get('activeTool'));
-    } else if ((e.key === 'Delete' || e.key === 'Backspace') && this.engine?.selectedNode) {
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && this.engine) {
+      if (this.engine.selectedNodes && this.engine.selectedNodes.length > 0) {
+        e.preventDefault();
+        const ids = this.engine.selectedNodes.map((n) => n.id);
+        ids.forEach((id) => this.engine.removeNode(id));
+        this.engine.selectNode(null);
+      } else if (this.engine.selectedNode) {
+        e.preventDefault();
+        this.engine.removeNode(this.engine.selectedNode.id);
+      }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
       e.preventDefault();
-      this.engine.removeNode(this.engine.selectedNode.id);
+      const activePage = Number(AppState.get('currentPage')) || 1;
+      const pageNodes = this.engine.nodes.filter((n) => Number(n.page || 1) === activePage);
+      this.engine.selectNodes(pageNodes);
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      e.preventDefault();
+      this._duplicateSelection();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       if (e.shiftKey) {
@@ -637,22 +664,40 @@ export class CortexWorkspace extends CortexElement {
         }
       }
 
-      // Seleção e Arraste de Objetos (Hit Detection Adaptativo Mouse vs Touch)
+      // Seleção e Arraste de Objetos (Hit Detection Adaptativo com Multi-Seleção e Marquee)
       const hitNode = this.engine.hitTest(worldPt.x, worldPt.y, pointerType);
-      this.engine.selectNode(hitNode);
+      const isMultiKey = e.shiftKey || e.ctrlKey || e.metaKey;
 
       if (hitNode) {
-        this._interactionMode = 'move-node';
+        if (isMultiKey) {
+          this.engine.selectNode(hitNode, true);
+        } else if (!this.engine.selectedNodes.some((n) => n.id === hitNode.id)) {
+          this.engine.selectNode(hitNode, false);
+        }
+
+        this._interactionMode = 'move-nodes';
         this._dragStartWorld = worldPt;
-        this._initialBounds = {
-          x: hitNode.x,
-          y: hitNode.y,
-          width: hitNode.width,
-          height: hitNode.height
-        };
+        this._initialNodesPositions = this.engine.selectedNodes.map((n) => ({
+          id: n.id,
+          x: n.x,
+          y: n.y,
+          width: n.width,
+          height: n.height
+        }));
       } else {
-        this._interactionMode = null;
+        if (!isMultiKey) {
+          this.engine.selectNode(null);
+        }
+        if (tool === 'select') {
+          this._interactionMode = 'marquee-select';
+          this._dragStartWorld = worldPt;
+          this._marqueeInitialSelected = isMultiKey ? [...this.engine.selectedNodes] : [];
+        } else {
+          this._interactionMode = null;
+        }
       }
+
+      this._updateFloatingToolbar();
     });
 
     // 4. Pointer Move
@@ -746,15 +791,47 @@ export class CortexWorkspace extends CortexElement {
         return;
       }
 
-      // Movimentação de Objeto Selecionado
-      if (this._interactionMode === 'move-node' && this.engine.selectedNode) {
+      // Movimentação de Múltiplos Objetos Selecionados ou Objeto Individual
+      if (this._interactionMode === 'move-nodes' && this.engine.selectedNodes.length > 0) {
         const dx = worldPt.x - this._dragStartWorld.x;
         const dy = worldPt.y - this._dragStartWorld.y;
-        this.engine.selectedNode.x = Math.round(this._initialBounds.x + dx);
-        this.engine.selectedNode.y = Math.round(this._initialBounds.y + dy);
+        this._initialNodesPositions.forEach((pos) => {
+          const target = this.engine.nodes.find((n) => n.id === pos.id);
+          if (target) {
+            target.x = Math.round(pos.x + dx);
+            target.y = Math.round(pos.y + dy);
+          }
+        });
         this._didModifyScene = true;
-        AppState.setState({ selectedNode: this.engine.selectedNode.toJSON() });
         this.engine.requestRender();
+        this._updateFloatingToolbar();
+        return;
+      }
+
+      // Caixa de Seleção Elástica (Marquee Selection)
+      if (this._interactionMode === 'marquee-select') {
+        const minX = Math.min(this._dragStartWorld.x, worldPt.x);
+        const minY = Math.min(this._dragStartWorld.y, worldPt.y);
+        const w = Math.abs(worldPt.x - this._dragStartWorld.x);
+        const h = Math.abs(worldPt.y - this._dragStartWorld.y);
+        this.engine.setMarqueeRect({ x: minX, y: minY, width: w, height: h });
+
+        const activePage = Number(AppState.get('currentPage')) || 1;
+        const marqueeBox = { x: minX, y: minY, width: w, height: h };
+        const hitNodes = this.engine.nodes.filter((n) => {
+          if (Number(n.page || 1) !== activePage) return false;
+          const b = n.getBounds ? n.getBounds() : { x: n.x, y: n.y, width: n.width, height: n.height };
+          return (
+            b.x < marqueeBox.x + marqueeBox.width &&
+            b.x + b.width > marqueeBox.x &&
+            b.y < marqueeBox.y + marqueeBox.height &&
+            b.y + b.height > marqueeBox.y
+          );
+        });
+
+        const combined = [...new Set([...this._marqueeInitialSelected, ...hitNodes])];
+        this.engine.selectNodes(combined);
+        this._updateFloatingToolbar();
         return;
       }
 
@@ -840,6 +917,8 @@ export class CortexWorkspace extends CortexElement {
         } else {
           AppState.setState({ activeTool: 'select' });
         }
+      } else if (this._interactionMode === 'marquee-select') {
+        this.engine.setMarqueeRect(null);
       } else if (this._didModifyScene) {
         this.engine.syncSceneState(true);
       }
@@ -851,6 +930,8 @@ export class CortexWorkspace extends CortexElement {
         this._interactionMode = null;
         this._updateCursor(AppState.get('activeTool'));
       }
+
+      this._updateFloatingToolbar();
     };
 
     canvas.addEventListener('pointerup', endPointer);
@@ -863,6 +944,247 @@ export class CortexWorkspace extends CortexElement {
         this.rulers.render(this.engine.panX, this.engine.panY, this.engine.zoomScale);
       }
     });
+
+    // Atualiza a barra flutuante ao fazer zoom ou pan com a roda do mouse
+    canvas.addEventListener('wheel', () => {
+      this._updateFloatingToolbar();
+    }, { passive: true });
+  }
+
+  /**
+   * Duplica todos os objetos selecionados com um deslocamento elegante
+   */
+  _duplicateSelection() {
+    if (!this.engine || !this.engine.selectedNodes || this.engine.selectedNodes.length === 0) return;
+    const clonedNodes = [];
+
+    this.engine.selectedNodes.forEach((node) => {
+      const data = node.toJSON();
+      data.id = `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      data.name = `${node.name || 'Object'} (Cópia)`;
+      data.x = (data.x || 0) + 20;
+      data.y = (data.y || 0) + 20;
+      const newNode = createNodeFromJSON(data);
+      this.engine.nodes.push(newNode);
+      clonedNodes.push(newNode);
+    });
+
+    this.engine.selectNodes(clonedNodes);
+    this.engine.syncSceneState(true);
+    CortexModal.toast(
+      clonedNodes.length > 1 ? `${clonedNodes.length} objetos duplicados!` : 'Objeto duplicado!',
+      'success',
+      1500
+    );
+  }
+
+  /**
+   * Atualiza dinamicamente o posicionamento e os botões da Barra de Ferramentas Flutuante
+   * com base na quantidade de objetos selecionados no palco (1 ou 2+).
+   */
+  _updateFloatingToolbar() {
+    const bar = this.shadowRoot?.getElementById('selection-toolbar');
+    if (!bar || !this.engine) return;
+
+    const count = this.engine.selectedNodes ? this.engine.selectedNodes.length : 0;
+    if (count === 0) {
+      bar.classList.add('hidden');
+      return;
+    }
+
+    const bounds = this.engine.getSelectionBounds();
+    if (!bounds) {
+      bar.classList.add('hidden');
+      return;
+    }
+
+    // Calcula coordenadas de tela relativas ao #stage-wrap
+    const screenCenter = this.engine.worldToScreen(bounds.cx, bounds.y);
+    const screenBottom = this.engine.worldToScreen(bounds.cx, bounds.y + bounds.height);
+
+    let top = screenCenter.y - 48;
+    if (top < 10) {
+      top = screenBottom.y + 12;
+    }
+
+    const maxLeft = Math.max(180, (this.engine.viewportWidth || 800) - 180);
+    const left = Math.max(160, Math.min(maxLeft, screenCenter.x));
+
+    bar.style.top = `${Math.round(top)}px`;
+    bar.style.left = `${Math.round(left)}px`;
+    bar.classList.remove('hidden');
+
+    if (count >= 2) {
+      // 2 ou mais objetos: Recursos Avançados de Design e Modelagem Estilo CorelDraw / Illustrator
+      bar.innerHTML = `
+        <div class="sel-group">
+          <span class="sel-badge">${count} selecionados</span>
+          <button class="sel-btn primary" data-sel-act="union" title="União / Soldar (Weld): Combina os objetos em um contorno único">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>
+            <span>União</span>
+          </button>
+          <button class="sel-btn primary" data-sel-act="intersect" title="Interseção (Intersect): Mantém apenas a área de sobreposição comum">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 12a6 6 0 0 0 6 0 6 6 0 0 0-6 0Z" fill="currentColor"/><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>
+            <span>Interseção</span>
+          </button>
+          <button class="sel-btn" data-sel-act="subtract" title="Aparar (Trim): O objeto superior apara/corta o objeto inferior">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6" stroke-dasharray="2 2"/></svg>
+            <span>Aparar</span>
+          </button>
+          <button class="sel-btn" data-sel-act="exclude" title="Excluir Sobreposição (Exclude / XOR)">
+            <span>Excluir</span>
+          </button>
+        </div>
+
+        <div class="sel-sep"></div>
+
+        <div class="sel-group" title="Alinhamentos (CorelDraw)">
+          <button class="sel-btn icon-only" data-sel-act="align-left" title="Alinhar à Esquerda (Align Left)">⇤</button>
+          <button class="sel-btn icon-only" data-sel-act="align-center-h" title="Centralizar Horizontalmente">⇹</button>
+          <button class="sel-btn icon-only" data-sel-act="align-right" title="Alinhar à Direita (Align Right)">⇥</button>
+          <button class="sel-btn icon-only" data-sel-act="align-top" title="Alinhar ao Topo (Align Top)">⤒</button>
+          <button class="sel-btn icon-only" data-sel-act="align-center-v" title="Centralizar Verticalmente">⇕</button>
+          <button class="sel-btn icon-only" data-sel-act="align-bottom" title="Alinhar ao Fundo (Align Bottom)">⤓</button>
+        </div>
+
+        <div class="sel-sep"></div>
+
+        <div class="sel-group">
+          <button class="sel-btn icon-only" data-sel-act="distribute-h" title="Distribuir Horizontalmente">↔</button>
+          <button class="sel-btn icon-only" data-sel-act="distribute-v" title="Distribuir Verticalmente">↕</button>
+          <button class="sel-btn icon-only" data-sel-act="duplicate" title="Duplicar Selecionados (Ctrl+D)">📋</button>
+          <button class="sel-btn icon-only danger" data-sel-act="delete" title="Excluir Objetos Selecionados (Del)">🗑️</button>
+        </div>
+      `;
+    } else {
+      // 1 objeto selecionado: Ações rápidas de elemento único
+      const single = this.engine.selectedNodes[0] || this.engine.selectedNode;
+      bar.innerHTML = `
+        <div class="sel-group">
+          <span class="sel-badge">${single.name || single.type}</span>
+          <button class="sel-btn" data-sel-act="duplicate" title="Duplicar Objeto (Ctrl+D)">📋 Duplicar</button>
+          <button class="sel-btn" data-sel-act="rotate-90" title="Girar 90 graus no sentido horário">↷ 90°</button>
+          <button class="sel-btn" data-sel-act="bring-front" title="Trazer para a Frente">⇈ Frente</button>
+          <button class="sel-btn" data-sel-act="send-back" title="Enviar para Trás">⇊ Trás</button>
+          <button class="sel-btn icon-only danger" data-sel-act="delete" title="Excluir Objeto (Del)">🗑️</button>
+        </div>
+      `;
+    }
+
+    // Vincula ações de clique
+    bar.querySelectorAll('[data-sel-act]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const act = btn.dataset.selAct;
+        this._executeSelectionToolbarAction(act);
+      });
+    });
+  }
+
+  /**
+   * Executa a ação clicada na Barra Flutuante de Seleção
+   */
+  _executeSelectionToolbarAction(action) {
+    if (!this.engine) return;
+
+    switch (action) {
+      case 'union': {
+        const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'union');
+        if (result) {
+          CortexModal.toast('⚡ União de formas realizada com sucesso (Weld)!', 'success');
+        } else {
+          CortexModal.toast('Não foi possível calcular a união destas formas.', 'warning');
+        }
+        break;
+      }
+
+      case 'intersect': {
+        const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'intersect');
+        if (result) {
+          CortexModal.toast('⚡ Interseção criada a partir da área comum!', 'success');
+        } else {
+          CortexModal.toast('Os objetos não possuem área de sobreposição para interseção.', 'warning');
+        }
+        break;
+      }
+
+      case 'subtract': {
+        const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'subtract');
+        if (result) {
+          CortexModal.toast('⚡ Forma aparada com sucesso (Trim / Subtract)!', 'success');
+        } else {
+          CortexModal.toast('Não foi possível aparar as formas selecionadas.', 'warning');
+        }
+        break;
+      }
+
+      case 'exclude': {
+        const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'exclude');
+        if (result) {
+          CortexModal.toast('⚡ Exclusão de sobreposição realizada (XOR)!', 'success');
+        } else {
+          CortexModal.toast('Não foi possível calcular a exclusão.', 'warning');
+        }
+        break;
+      }
+
+      case 'align-left':
+      case 'align-center-h':
+      case 'align-right':
+      case 'align-top':
+      case 'align-center-v':
+      case 'align-bottom': {
+        const type = action.replace('align-', '');
+        alignSelectedNodes(this.engine, this.engine.selectedNodes, type);
+        CortexModal.toast(`Objetos alinhados (${type})`, 'info', 1200);
+        break;
+      }
+
+      case 'distribute-h':
+        distributeSelectedNodes(this.engine, this.engine.selectedNodes, 'horizontal');
+        CortexModal.toast('Objetos distribuídos horizontalmente', 'info', 1200);
+        break;
+
+      case 'distribute-v':
+        distributeSelectedNodes(this.engine, this.engine.selectedNodes, 'vertical');
+        CortexModal.toast('Objetos distribuídos verticalmente', 'info', 1200);
+        break;
+
+      case 'duplicate':
+        this._duplicateSelection();
+        break;
+
+      case 'rotate-90': {
+        this.engine.selectedNodes.forEach((n) => {
+          n.rotation = ((Number(n.rotation) || 0) + 90) % 360;
+        });
+        this.engine.syncSceneState(true);
+        CortexModal.toast('Objetos girados em 90°', 'info', 1200);
+        break;
+      }
+
+      case 'bring-front':
+        this.engine.bringToFront();
+        CortexModal.toast('Trazido para a frente', 'info', 1000);
+        break;
+
+      case 'send-back':
+        this.engine.sendToBack();
+        CortexModal.toast('Enviado para trás', 'info', 1000);
+        break;
+
+      case 'delete': {
+        if (this.engine.selectedNodes && this.engine.selectedNodes.length > 0) {
+          const ids = this.engine.selectedNodes.map((n) => n.id);
+          ids.forEach((id) => this.engine.removeNode(id));
+          this.engine.selectNode(null);
+          CortexModal.toast('Objetos excluídos', 'info', 1200);
+        }
+        break;
+      }
+    }
+
+    this._updateFloatingToolbar();
   }
 
   render() {
@@ -942,6 +1264,103 @@ export class CortexWorkspace extends CortexElement {
           height: 100%;
           touch-action: none;
         }
+
+        /* Barra de Ferramentas Flutuante de Seleção e Modelagem (CorelDraw / Figma style) */
+        .selection-floating-bar {
+          position: absolute;
+          z-index: 250;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 6px;
+          background-color: var(--bg-panel, #1e1e24);
+          border: 1px solid var(--border-color, #3f3f46);
+          border-radius: var(--radius-sm, 6px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+          backdrop-filter: blur(8px);
+          pointer-events: auto;
+          transform: translateX(-50%);
+          transition: opacity 0.12s ease;
+          user-select: none;
+          max-width: 95vw;
+          overflow-x: auto;
+        }
+
+        .selection-floating-bar.hidden {
+          display: none !important;
+        }
+
+        .sel-group {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+        }
+
+        .sel-badge {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: var(--text-muted, #94a3b8);
+          padding: 2px 6px;
+          background: var(--bg-input, rgba(0, 0, 0, 0.2));
+          border-radius: 4px;
+          margin-right: 2px;
+          white-space: nowrap;
+        }
+
+        .sel-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          height: 24px;
+          padding: 0 7px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-primary, #ffffff);
+          background: transparent;
+          border: 1px solid transparent;
+          cursor: pointer;
+          transition: all 0.12s ease;
+          white-space: nowrap;
+        }
+
+        .sel-btn:hover {
+          background-color: var(--bg-hover, rgba(255, 255, 255, 0.1));
+          border-color: var(--border-subtle, rgba(255, 255, 255, 0.15));
+        }
+
+        .sel-btn.primary {
+          background-color: var(--accent-blue-alpha, rgba(20, 115, 230, 0.2));
+          border-color: var(--accent-blue, #1473e6);
+          color: var(--accent-text, #38bdf8);
+          font-weight: 600;
+        }
+
+        .sel-btn.primary:hover {
+          background-color: var(--accent-blue, #1473e6);
+          color: #ffffff;
+        }
+
+        .sel-btn.icon-only {
+          padding: 0 5px;
+          min-width: 24px;
+          justify-content: center;
+          font-size: 12px;
+        }
+
+        .sel-btn.danger:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+          border-color: #ef4444;
+          color: #ef4444;
+        }
+
+        .sel-sep {
+          width: 1px;
+          height: 16px;
+          background: var(--border-subtle, rgba(255, 255, 255, 0.15));
+          margin: 0 2px;
+          flex-shrink: 0;
+        }
       </style>
 
       <div class="workspace-grid ${showRulers ? '' : 'rulers-hidden'}">
@@ -950,9 +1369,12 @@ export class CortexWorkspace extends CortexElement {
         <canvas id="ruler-v"></canvas>
         <div id="stage-wrap">
           <canvas id="stage-canvas"></canvas>
+          <div id="selection-toolbar" class="selection-floating-bar hidden" role="toolbar" aria-label="Selection Toolbar"></div>
         </div>
       </div>
     `;
+
+    this._updateFloatingToolbar();
   }
 }
 

@@ -31,6 +31,8 @@ export class CanvasEngine {
     // Árvore de Elementos (DOM Virtual Interno do Canvas)
     this.nodes = [];
     this.selectedNode = null;
+    this.selectedNodes = []; // Suporte a Multi-seleção de objetos
+    this.marqueeRect = null;  // Caixa de seleção retangular de arraste (Marquee)
     this._tabDocuments = new Map(); // tabId -> { nodes, currentPage, totalPages }
     this._currentTabId = AppState.get('activeTabId') || 'doc-1';
 
@@ -43,6 +45,7 @@ export class CanvasEngine {
     this._unsubHistory = EventBus.on('history:restore', ({ nodes }) => {
       this.nodes = (nodes || []).map((n) => createNodeFromJSON(n));
       this.selectedNode = null;
+      this.selectedNodes = [];
       this.requestRender();
     });
 
@@ -104,10 +107,18 @@ export class CanvasEngine {
     this.nodes.sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
     const serialized = this.nodes.map((n) => n.toJSON());
 
+    // Remove referências de nós selecionados que já não existem
+    this.selectedNodes = (this.selectedNodes || []).filter((sn) => this.nodes.some((n) => n.id === sn.id));
+    if (this.selectedNode && !this.nodes.some((n) => n.id === this.selectedNode.id)) {
+      this.selectedNode = this.selectedNodes[this.selectedNodes.length - 1] || null;
+    }
+
     AppState.setState({
       sceneNodes: serialized,
       selectedNode: this.selectedNode ? this.selectedNode.toJSON() : null,
-      selectedNodeId: this.selectedNode ? this.selectedNode.id : null
+      selectedNodeId: this.selectedNode ? this.selectedNode.id : null,
+      selectedNodes: this.selectedNodes.map((n) => n.toJSON()),
+      selectedNodeIds: this.selectedNodes.map((n) => n.id)
     });
 
     if (recordHistory) {
@@ -116,7 +127,8 @@ export class CanvasEngine {
 
     EventBus.emit('scene:updated', {
       nodes: serialized,
-      selectedNode: this.selectedNode ? this.selectedNode.toJSON() : null
+      selectedNode: this.selectedNode ? this.selectedNode.toJSON() : null,
+      selectedNodes: this.selectedNodes.map((n) => n.toJSON())
     });
     this.requestRender();
   }
@@ -334,16 +346,107 @@ export class CanvasEngine {
     return this.addNode(rect, true, true);
   }
 
-  selectNode(nodeOrNull) {
-    this.selectedNode = nodeOrNull;
+  /**
+   * Seleciona um nó individual ou alterna na lista de seleção múltipla (se multi = true)
+   */
+  selectNode(nodeOrNull, multi = false) {
+    if (!nodeOrNull) {
+      this.selectedNode = null;
+      this.selectedNodes = [];
+    } else if (multi) {
+      const idx = this.selectedNodes.findIndex((n) => n.id === nodeOrNull.id);
+      if (idx !== -1) {
+        this.selectedNodes.splice(idx, 1);
+        this.selectedNode = this.selectedNodes[this.selectedNodes.length - 1] || null;
+      } else {
+        this.selectedNodes.push(nodeOrNull);
+        this.selectedNode = nodeOrNull;
+      }
+    } else {
+      this.selectedNodes = [nodeOrNull];
+      this.selectedNode = nodeOrNull;
+    }
+
     AppState.setState({
-      selectedNode: nodeOrNull ? nodeOrNull.toJSON() : null,
-      selectedNodeId: nodeOrNull ? nodeOrNull.id : null
+      selectedNode: this.selectedNode ? this.selectedNode.toJSON() : null,
+      selectedNodeId: this.selectedNode ? this.selectedNode.id : null,
+      selectedNodes: this.selectedNodes.map((n) => n.toJSON()),
+      selectedNodeIds: this.selectedNodes.map((n) => n.id)
     });
+
     EventBus.emit('node:selected', {
-      node: nodeOrNull ? nodeOrNull.toJSON() : null
+      node: this.selectedNode ? this.selectedNode.toJSON() : null,
+      nodes: this.selectedNodes.map((n) => n.toJSON())
     });
+
     this.requestRender();
+  }
+
+  /**
+   * Define diretamente a lista de múltiplos nós selecionados
+   */
+  selectNodes(nodesArray) {
+    this.selectedNodes = Array.isArray(nodesArray) ? [...nodesArray] : [];
+    this.selectedNode = this.selectedNodes[this.selectedNodes.length - 1] || null;
+
+    AppState.setState({
+      selectedNode: this.selectedNode ? this.selectedNode.toJSON() : null,
+      selectedNodeId: this.selectedNode ? this.selectedNode.id : null,
+      selectedNodes: this.selectedNodes.map((n) => n.toJSON()),
+      selectedNodeIds: this.selectedNodes.map((n) => n.id)
+    });
+
+    EventBus.emit('node:selected', {
+      node: this.selectedNode ? this.selectedNode.toJSON() : null,
+      nodes: this.selectedNodes.map((n) => n.toJSON())
+    });
+
+    this.requestRender();
+  }
+
+  /**
+   * Define ou remove o retângulo da caixa de seleção elástica (Marquee Selection)
+   */
+  setMarqueeRect(rectOrNull) {
+    this.marqueeRect = rectOrNull;
+    this.requestRender();
+  }
+
+  /**
+   * Retorna a Bounding Box unificada de todos os nós selecionados
+   */
+  getSelectionBounds() {
+    if (!this.selectedNodes || this.selectedNodes.length === 0) return null;
+    if (this.selectedNodes.length === 1) {
+      return this.selectedNodes[0].getBounds ? this.selectedNodes[0].getBounds() : {
+        x: this.selectedNodes[0].x,
+        y: this.selectedNodes[0].y,
+        width: this.selectedNodes[0].width,
+        height: this.selectedNodes[0].height
+      };
+    }
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    this.selectedNodes.forEach((n) => {
+      const b = n.getBounds ? n.getBounds() : { x: n.x, y: n.y, width: n.width, height: n.height };
+      if (b.x < minX) minX = b.x;
+      if (b.y < minY) minY = b.y;
+      if (b.x + b.width > maxX) maxX = b.x + b.width;
+      if (b.y + b.height > maxY) maxY = b.y + b.height;
+    });
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      cx: (minX + maxX) / 2,
+      cy: (minY + maxY) / 2
+    };
   }
 
   /**
@@ -469,10 +572,42 @@ export class CanvasEngine {
       }
     }
 
-    // 8. Caixa de Seleção e Alças (seletor normal ou modo de rotação com pontos de ancoragem transformados)
-    if (this.selectedNode && Number(this.selectedNode.page || 1) === activePageNum) {
-      const isRotateMode = AppState.get('activeTool') === 'rotate';
+    // 8. Caixa de Seleção e Alças (seletor normal, multi-seleção ou modo de rotação com pontos de ancoragem transformados)
+    const isRotateMode = AppState.get('activeTool') === 'rotate';
+
+    if (this.selectedNodes && this.selectedNodes.length > 1) {
+      // 8.1 Destaque individual sutil para cada nó na multi-seleção
+      ctx.save();
+      ctx.strokeStyle = 'rgba(20, 115, 230, 0.45)';
+      ctx.lineWidth = 1 / this.zoomScale;
+      ctx.setLineDash([3 / this.zoomScale, 3 / this.zoomScale]);
+      this.selectedNodes.forEach((n) => {
+        if (Number(n.page || 1) === activePageNum) {
+          const b = n.getBounds ? n.getBounds() : { x: n.x, y: n.y, width: n.width, height: n.height };
+          ctx.strokeRect(b.x, b.y, b.width, b.height);
+        }
+      });
+      ctx.restore();
+
+      // 8.2 Bounding Box Unificada da Multi-Seleção (CorelDraw / Figma style)
+      const uBounds = this.getSelectionBounds();
+      if (uBounds) {
+        this._drawUnifiedSelection(ctx, uBounds, this.zoomScale, isRotateMode);
+      }
+    } else if (this.selectedNode && Number(this.selectedNode.page || 1) === activePageNum) {
       this.selectedNode.drawSelection(ctx, this.zoomScale, isRotateMode);
+    }
+
+    // 8.3 Caixa de Seleção Elástica (Marquee Selection)
+    if (this.marqueeRect) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(20, 115, 230, 0.15)';
+      ctx.strokeStyle = '#1473e6';
+      ctx.lineWidth = 1.2 / this.zoomScale;
+      ctx.setLineDash([4 / this.zoomScale, 3 / this.zoomScale]);
+      ctx.fillRect(this.marqueeRect.x, this.marqueeRect.y, this.marqueeRect.width, this.marqueeRect.height);
+      ctx.strokeRect(this.marqueeRect.x, this.marqueeRect.y, this.marqueeRect.width, this.marqueeRect.height);
+      ctx.restore();
     }
 
     ctx.restore();
@@ -515,6 +650,70 @@ export class CanvasEngine {
     ctx.strokeStyle = '#ec4899';
     ctx.lineWidth = 1 / this.zoomScale;
     ctx.strokeRect(left, top, mw, mh);
+    ctx.restore();
+  }
+
+  _drawUnifiedSelection(ctx, b, zoomScale, isRotateMode) {
+    const handleSize = 8 / zoomScale;
+    const halfH = handleSize / 2;
+    const rotateOffset = 26 / zoomScale;
+
+    ctx.save();
+
+    // 1. Moldura tracejada da Bounding Box unificada
+    ctx.strokeStyle = '#1473e6';
+    ctx.lineWidth = 1.4 / zoomScale;
+    ctx.setLineDash([5 / zoomScale, 3 / zoomScale]);
+    ctx.strokeRect(b.x, b.y, b.width, b.height);
+    ctx.setLineDash([]);
+
+    // 2. Haste e Ponto Superior de Rotação
+    const cx = b.x + b.width / 2;
+    const topY = b.y;
+    ctx.beginPath();
+    ctx.moveTo(cx, topY);
+    ctx.lineTo(cx, topY - rotateOffset);
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 1.2 / zoomScale;
+    ctx.stroke();
+
+    // Alça de rotação
+    ctx.beginPath();
+    ctx.arc(cx, topY - rotateOffset, handleSize / 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = isRotateMode ? '#00f0ff' : '#0284c7';
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5 / zoomScale;
+    ctx.stroke();
+
+    // 3. Alças nos 8 pontos da Bounding Box
+    const positions = [
+      { x: b.x, y: b.y }, // nw
+      { x: cx, y: b.y },  // n
+      { x: b.x + b.width, y: b.y }, // ne
+      { x: b.x + b.width, y: b.y + b.height / 2 }, // e
+      { x: b.x + b.width, y: b.y + b.height }, // se
+      { x: cx, y: b.y + b.height }, // s
+      { x: b.x, y: b.y + b.height }, // sw
+      { x: b.x, y: b.y + b.height / 2 } // w
+    ];
+
+    positions.forEach((pos) => {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(pos.x - halfH, pos.y - halfH, handleSize, handleSize);
+      ctx.strokeStyle = '#1473e6';
+      ctx.lineWidth = 1.2 / zoomScale;
+      ctx.strokeRect(pos.x - halfH, pos.y - halfH, handleSize, handleSize);
+    });
+
+    // 4. Mira Central
+    const cy = b.y + b.height / 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5 / zoomScale, 0, Math.PI * 2);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 1.2 / zoomScale;
+    ctx.stroke();
+
     ctx.restore();
   }
 

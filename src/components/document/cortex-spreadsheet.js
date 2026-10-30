@@ -355,6 +355,14 @@ export class CortexSpreadsheet extends CortexElement {
           font-family: serif;
           font-size: 14px;
           user-select: none;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: 3px;
+        }
+
+        .fx-icon:hover {
+          background: #e2e8f0;
+          color: #2563eb;
         }
 
         .formula-input {
@@ -713,6 +721,24 @@ export class CortexSpreadsheet extends CortexElement {
         if (cellEl) cellEl.textContent = val;
       });
     }
+
+    // Assistente de Função fx via CortexModal
+    root.querySelector('.fx-icon')?.addEventListener('click', async () => {
+      const func = await CortexModal.prompt({
+        title: 'Inserir Função (Formula Wizard)',
+        message: `Insira uma fórmula ou função para a célula ${this._activeCell}:\nExemplos: =SUM(C5:C10) | =AVERAGE(C5:C10) | =MAX(C5:C10)`,
+        defaultValue: '=SUM(C5:C10)',
+        placeholder: '=SUM(...)',
+        confirmText: 'Inserir Fórmula',
+        cancelText: 'Cancelar'
+      });
+      if (func && func.trim()) {
+        if (!this._data[this._activeCell]) this._data[this._activeCell] = {};
+        this._data[this._activeCell].value = func.trim();
+        this.render();
+        CortexModal.toast(`Fórmula aplicada na célula ${this._activeCell}`, 'success');
+      }
+    });
 
     // Ações de formatação
     root.querySelector('[data-act="bold"]')?.addEventListener('click', () => {

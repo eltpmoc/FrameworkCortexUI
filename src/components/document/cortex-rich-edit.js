@@ -510,6 +510,38 @@ export class CortexRichEdit extends CortexElement {
       this.insertTableOfContents();
     });
 
+    // Add Text via CortexModal.prompt
+    root.querySelector('[data-act="add-text"]')?.addEventListener('click', async () => {
+      const text = await CortexModal.prompt({
+        title: 'Adicionar Texto / Parágrafo',
+        message: 'Digite o conteúdo a ser inserido na posição atual do documento:',
+        defaultValue: 'Nova seção técnica com especificações corporativas.',
+        placeholder: 'Conteúdo do parágrafo...',
+        confirmText: 'Inserir Texto',
+        cancelText: 'Cancelar'
+      });
+      if (text && text.trim()) {
+        const editor = root.querySelector('#editor-page');
+        if (editor) {
+          editor.focus();
+          document.execCommand('insertHTML', false, `<p class="doc-p">${text.trim()}</p>`);
+          CortexModal.toast('Parágrafo inserido no documento!', 'success');
+        }
+      }
+    });
+
+    // Insert Table of Figures via CortexModal.alert
+    root.querySelector('[data-act="table-figures"]')?.addEventListener('click', async () => {
+      const editor = root.querySelector('#editor-page');
+      const figCount = editor ? editor.querySelectorAll('figure').length : 0;
+      const tblCount = editor ? editor.querySelectorAll('.doc-table-box').length : 0;
+      await CortexModal.alert({
+        title: 'Tabela de Figuras e Ilustrações',
+        message: `Catálogo de Ilustrações compilado com sucesso!\n\n• Figuras encontradas no texto: ${figCount}\n• Tabelas formatadas encontradas: ${tblCount}`,
+        type: 'info'
+      });
+    });
+
     // Update Table
     root.querySelector('[data-act="update-table"]')?.addEventListener('click', () => {
       CortexModal.toast('Tabela e sumário atualizados com base no conteúdo atual!', 'info');

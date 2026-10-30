@@ -45,8 +45,15 @@ export class CortexFileManager extends CortexElement {
     ];
   }
 
-  _newDirectory() {
-    const name = window.prompt('Digite o nome do novo diretório:', 'New Folder');
+  async _newDirectory() {
+    const name = await CortexModal.prompt({
+      title: 'Novo Diretório',
+      message: 'Digite o nome do novo diretório a ser criado na árvore:',
+      defaultValue: 'New Folder',
+      placeholder: 'Nome do diretório...',
+      confirmText: 'Criar Pasta',
+      cancelText: 'Cancelar'
+    });
     if (name && name.trim()) {
       const cleanName = name.trim();
       const id = cleanName.toLowerCase().replace(/\s+/g, '-');
@@ -81,11 +88,18 @@ export class CortexFileManager extends CortexElement {
     input.click();
   }
 
-  _renameFile(fileId) {
+  async _renameFile(fileId) {
     const file = this._files.find(f => f.id === fileId);
     if (!file) return;
 
-    const newName = window.prompt('Renomear arquivo:', file.name);
+    const newName = await CortexModal.prompt({
+      title: 'Renomear Arquivo',
+      message: `Digite o novo nome para o arquivo "${file.name}":`,
+      defaultValue: file.name,
+      placeholder: 'Nome do arquivo...',
+      confirmText: 'Renomear',
+      cancelText: 'Cancelar'
+    });
     if (newName && newName.trim()) {
       file.name = newName.trim();
       this._contextMenu.visible = false;
@@ -94,11 +108,19 @@ export class CortexFileManager extends CortexElement {
     }
   }
 
-  _deleteFile(fileId) {
+  async _deleteFile(fileId) {
     const file = this._files.find(f => f.id === fileId);
     if (!file) return;
 
-    if (window.confirm(`Tem certeza que deseja excluir "${file.name}"?`)) {
+    const confirmed = await CortexModal.confirm({
+      title: 'Excluir Arquivo',
+      message: `Tem certeza que deseja excluir o arquivo "${file.name}"? Esta ação removerá o item permanentemente.`,
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      danger: true
+    });
+
+    if (confirmed) {
       this._files = this._files.filter(f => f.id !== fileId);
       this._selectedFileIds.delete(fileId);
       this._contextMenu.visible = false;
@@ -122,17 +144,32 @@ export class CortexFileManager extends CortexElement {
     CortexModal.toast(`Cópia criada: "${copy.name}"`, 'success');
   }
 
-  _moveFile(fileId) {
+  async _moveFile(fileId) {
     const file = this._files.find(f => f.id === fileId);
     if (!file) return;
 
     const folderNames = this._folders.map(f => f.name).join(', ');
-    const target = window.prompt(`Mover para qual pasta? (${folderNames})`, 'Landscapes');
+    const target = await CortexModal.prompt({
+      title: 'Mover Arquivo',
+      message: `Mover o arquivo "${file.name}" para qual diretório?\nPastas disponíveis: ${folderNames}`,
+      defaultValue: 'Landscapes',
+      placeholder: 'Nome da pasta de destino...',
+      confirmText: 'Mover',
+      cancelText: 'Cancelar'
+    });
+
     if (target && this._folders.some(f => f.name.toLowerCase() === target.trim().toLowerCase())) {
-      file.folder = target.trim();
+      const matchedFolder = this._folders.find(f => f.name.toLowerCase() === target.trim().toLowerCase());
+      file.folder = matchedFolder.name;
       this._contextMenu.visible = false;
       this.render();
       CortexModal.toast(`"${file.name}" movido para ${file.folder}!`, 'success');
+    } else if (target) {
+      await CortexModal.alert({
+        title: 'Diretório Não Encontrado',
+        message: `O diretório "${target}" informado não existe na hierarquia atual. Pastas disponíveis: ${folderNames}`,
+        type: 'warning'
+      });
     }
   }
 

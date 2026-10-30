@@ -223,7 +223,11 @@ th { background: #2f5597; color: white; padding: 8px; border: 1px solid #2f5597;
 
     const printWin = window.open('', '_blank', 'width=900,height=800');
     if (!printWin) {
-      CortexModal.toast('Permita popups no navegador para visualizar a impressão em PDF.', 'warning');
+      CortexModal.alert({
+        title: 'Popup de Impressão Bloqueado',
+        message: 'Por favor, permita popups no navegador para abrir a janela de visualização e exportação em PDF.',
+        type: 'info'
+      });
       return;
     }
 
@@ -269,14 +273,30 @@ th { background: #2f5597; color: white; padding: 8px; border: 1px solid #2f5597;
     CortexModal.toast('Novo item adicionado à fatura!', 'success');
   }
 
-  _removeItem(idx) {
+  async _removeItem(idx) {
     if (this._invoiceItems.length <= 1) {
-      CortexModal.toast('A fatura deve ter pelo menos um item.', 'warning');
+      await CortexModal.alert({
+        title: 'Item Obrigatório',
+        message: 'A fatura precisa manter pelo menos um item registrado.',
+        type: 'warning'
+      });
       return;
     }
-    this._invoiceItems.splice(idx, 1);
-    this.render();
-    CortexModal.toast('Item removido da fatura.', 'info');
+
+    const item = this._invoiceItems[idx];
+    const confirmed = await CortexModal.confirm({
+      title: 'Remover Item da Fatura',
+      message: `Deseja realmente remover o item "${item?.name || 'Item ' + (idx + 1)}"?`,
+      confirmText: 'Remover',
+      cancelText: 'Cancelar',
+      danger: true
+    });
+
+    if (confirmed) {
+      this._invoiceItems.splice(idx, 1);
+      this.render();
+      CortexModal.toast('Item removido da fatura.', 'info');
+    }
   }
 
   _renderHeroBadges() {

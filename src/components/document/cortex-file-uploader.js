@@ -92,14 +92,18 @@ export class CortexFileUploader extends CortexElement {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
-  _addFiles(fileList) {
+  async _addFiles(fileList) {
     const MAX_SIZE = 15 * 1024 * 1024; // 15 MB
     let addedCount = 0;
 
-    Array.from(fileList).forEach(f => {
+    for (const f of Array.from(fileList)) {
       if (f.size > MAX_SIZE) {
-        CortexModal.toast(`O arquivo "${f.name}" excede o limite máximo permitido de 15 MB.`, 'warning');
-        return;
+        await CortexModal.alert({
+          title: 'Limite de Arquivo Excedido',
+          message: `O arquivo "${f.name}" (${this._formatBytes(f.size)}) excede o tamanho máximo permitido de 15 MB por arquivo.`,
+          type: 'warning'
+        });
+        continue;
       }
 
       this._files.push({
@@ -112,7 +116,7 @@ export class CortexFileUploader extends CortexElement {
         animating: true
       });
       addedCount++;
-    });
+    }
 
     if (addedCount > 0) {
       this.render();
@@ -125,11 +129,22 @@ export class CortexFileUploader extends CortexElement {
     this.render();
   }
 
-  _removeAll() {
+  async _removeAll() {
     if (this._files.length === 0) return;
-    this._files = [];
-    this.render();
-    CortexModal.toast('Todos os arquivos foram removidos da lista.', 'info');
+
+    const confirmed = await CortexModal.confirm({
+      title: 'Limpar Fila de Upload',
+      message: `Deseja realmente remover todos os ${this._files.length} arquivos da lista de upload?`,
+      confirmText: 'Remover Todos',
+      cancelText: 'Cancelar',
+      danger: true
+    });
+
+    if (confirmed) {
+      this._files = [];
+      this.render();
+      CortexModal.toast('Todos os arquivos foram removidos da lista.', 'info');
+    }
   }
 
   render() {

@@ -11,6 +11,28 @@ export class CortexPolygon extends CortexNode {
     this.sides = Number(options.sides ?? 3); // 3: Triângulo, 5: Pentágono, 6: Hexágono, 8: Octógono
   }
 
+  /**
+   * Retorna os vértices 2D exatos do polígono regular
+   * em coordenadas locais relativas a (this.x, this.y).
+   */
+  getVertices() {
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const rx = Math.max(0.5, this.width / 2);
+    const ry = Math.max(0.5, this.height / 2);
+    const n = Math.max(3, this.sides);
+    const verts = [];
+
+    for (let i = 0; i < n; i++) {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+      verts.push({
+        x: cx + rx * Math.cos(angle),
+        y: cy + ry * Math.sin(angle)
+      });
+    }
+    return verts;
+  }
+
   buildPath() {
     const path = new Path2D();
     const b = this.getBounds();

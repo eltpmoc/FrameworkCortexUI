@@ -143,6 +143,22 @@ export class CortexWorkspace extends CortexElement {
       this._updateFloatingToolbar();
     });
 
+    this._onInspectorAction = (e) => {
+      const act = e.detail?.action;
+      if (!act) return;
+      if (act === 'boolean-union') this._executeSelectionToolbarAction('union');
+      else if (act === 'boolean-intersect') this._executeSelectionToolbarAction('intersect');
+      else if (act === 'boolean-subtract') this._executeSelectionToolbarAction('subtract');
+      else if (act === 'boolean-subtract-reverse') this._executeSelectionToolbarAction('subtract-reverse');
+      else if (act === 'boolean-exclude') this._executeSelectionToolbarAction('exclude');
+      else if (act.startsWith('align-')) this._executeSelectionToolbarAction(act);
+      else if (act.startsWith('distribute-')) this._executeSelectionToolbarAction(act);
+      else if (act === 'duplicate') this._executeSelectionToolbarAction('duplicate');
+      else if (act === 'delete') this._executeSelectionToolbarAction('delete');
+    };
+    window.addEventListener('cortex-inspector-action', this._onInspectorAction);
+    window.addEventListener('cortex-menu-action', this._onInspectorAction);
+
     this._bindStageEvents(stageCanvas);
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
@@ -154,6 +170,10 @@ export class CortexWorkspace extends CortexElement {
     }
     if (this.engine) {
       this.engine.destroy();
+    }
+    if (this._onInspectorAction) {
+      window.removeEventListener('cortex-inspector-action', this._onInspectorAction);
+      window.removeEventListener('cortex-menu-action', this._onInspectorAction);
     }
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
@@ -981,6 +1001,7 @@ export class CortexWorkspace extends CortexElement {
   /**
    * Atualiza dinamicamente o posicionamento e os botões da Barra de Ferramentas Flutuante
    * com base na quantidade de objetos selecionados no palco (1 ou 2+).
+   * Garante que a barra nunca fique cortada à esquerda, à direita ou sob réguas.
    */
   _updateFloatingToolbar() {
     const bar = this.shadowRoot?.getElementById('selection-toolbar');
@@ -998,22 +1019,6 @@ export class CortexWorkspace extends CortexElement {
       return;
     }
 
-    // Calcula coordenadas de tela relativas ao #stage-wrap
-    const screenCenter = this.engine.worldToScreen(bounds.cx, bounds.y);
-    const screenBottom = this.engine.worldToScreen(bounds.cx, bounds.y + bounds.height);
-
-    let top = screenCenter.y - 48;
-    if (top < 10) {
-      top = screenBottom.y + 12;
-    }
-
-    const maxLeft = Math.max(180, (this.engine.viewportWidth || 800) - 180);
-    const left = Math.max(160, Math.min(maxLeft, screenCenter.x));
-
-    bar.style.top = `${Math.round(top)}px`;
-    bar.style.left = `${Math.round(left)}px`;
-    bar.classList.remove('hidden');
-
     if (count >= 2) {
       // 2 ou mais objetos: Recursos Avançados de Design e Modelagem Estilo CorelDraw / Illustrator
       bar.innerHTML = `
@@ -1027,11 +1032,16 @@ export class CortexWorkspace extends CortexElement {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 12a6 6 0 0 0 6 0 6 6 0 0 0-6 0Z" fill="currentColor"/><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>
             <span>Interseção</span>
           </button>
-          <button class="sel-btn" data-sel-act="subtract" title="Aparar (Trim): O objeto superior apara/corta o objeto inferior">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6" stroke-dasharray="2 2"/></svg>
+          <button class="sel-btn" data-sel-act="subtract" title="Aparar (Frente corta Fundo): O objeto superior apara/recorta o inferior">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="10" height="10" rx="1"/><rect x="10" y="10" width="10" height="10" rx="1" stroke-dasharray="2 2"/></svg>
             <span>Aparar</span>
           </button>
-          <button class="sel-btn" data-sel-act="exclude" title="Excluir Sobreposição (Exclude / XOR)">
+          <button class="sel-btn" data-sel-act="subtract-reverse" title="Subtrair (Fundo corta Frente): O objeto inferior apara/recorta o superior">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="10" height="10" rx="1" stroke-dasharray="2 2"/><rect x="10" y="10" width="10" height="10" rx="1"/></svg>
+            <span>Subtrair</span>
+          </button>
+          <button class="sel-btn" data-sel-act="exclude" title="Excluir Sobreposição (Exclude / XOR): Mantém apenas áreas não sobrepostas">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/></svg>
             <span>Excluir</span>
           </button>
         </div>
@@ -1079,10 +1089,42 @@ export class CortexWorkspace extends CortexElement {
         this._executeSelectionToolbarAction(act);
       });
     });
+
+    bar.classList.remove('hidden');
+
+    // Mede dimensões reais da barra e do palco
+    const barW = bar.offsetWidth || (count >= 2 ? 560 : 340);
+    const barH = bar.offsetHeight || 36;
+    const stageW = this.engine.viewportWidth || 800;
+    const stageH = this.engine.viewportHeight || 600;
+
+    // Calcula coordenadas de tela relativas ao #stage-wrap
+    const screenCenter = this.engine.worldToScreen(bounds.cx, bounds.y);
+    const screenBottom = this.engine.worldToScreen(bounds.cx, bounds.y + bounds.height);
+
+    // Posicionamento vertical: se o objeto estiver no topo do viewport, posiciona abaixo do objeto
+    let top = screenCenter.y - barH - 12;
+    if (top < 10) {
+      top = screenBottom.y + 12;
+    }
+    // Garante que nunca saia da área de visualização vertical
+    top = Math.max(8, Math.min(stageH - barH - 8, top));
+
+    // Clamping Horizontal Perfeito:
+    // A barra usa `transform: translateX(-50%)`, portanto sua ponta esquerda fica em `left - halfW`.
+    // Para nunca cortar à esquerda (sob réguas): `left >= halfW + 12`.
+    // Para nunca cortar à direita: `left <= stageW - halfW - 12`.
+    const halfW = barW / 2;
+    const minLeft = halfW + 12;
+    const maxLeft = Math.max(minLeft, stageW - halfW - 12);
+    const clampLeft = Math.max(minLeft, Math.min(maxLeft, screenCenter.x));
+
+    bar.style.top = `${Math.round(top)}px`;
+    bar.style.left = `${Math.round(clampLeft)}px`;
   }
 
   /**
-   * Executa a ação clicada na Barra Flutuante de Seleção
+   * Executa a ação clicada na Barra Flutuante de Seleção ou no Inspetor
    */
   _executeSelectionToolbarAction(action) {
     if (!this.engine) return;
@@ -1111,9 +1153,19 @@ export class CortexWorkspace extends CortexElement {
       case 'subtract': {
         const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'subtract');
         if (result) {
-          CortexModal.toast('⚡ Forma aparada com sucesso (Trim / Subtract)!', 'success');
+          CortexModal.toast('⚡ Forma aparada com sucesso (Frente corta Fundo)!', 'success');
         } else {
           CortexModal.toast('Não foi possível aparar as formas selecionadas.', 'warning');
+        }
+        break;
+      }
+
+      case 'subtract-reverse': {
+        const result = executeBooleanOnNodes(this.engine, this.engine.selectedNodes, 'subtract-reverse');
+        if (result) {
+          CortexModal.toast('⚡ Forma subtraída com sucesso (Fundo corta Frente)!', 'success');
+        } else {
+          CortexModal.toast('Não foi possível subtrair as formas selecionadas.', 'warning');
         }
         break;
       }
@@ -1268,11 +1320,11 @@ export class CortexWorkspace extends CortexElement {
         /* Barra de Ferramentas Flutuante de Seleção e Modelagem (CorelDraw / Figma style) */
         .selection-floating-bar {
           position: absolute;
-          z-index: 250;
+          z-index: 300;
           display: flex;
           align-items: center;
           gap: 4px;
-          padding: 3px 6px;
+          padding: 4px 8px;
           background-color: var(--bg-panel, #1e1e24);
           border: 1px solid var(--border-color, #3f3f46);
           border-radius: var(--radius-sm, 6px);
@@ -1282,8 +1334,15 @@ export class CortexWorkspace extends CortexElement {
           transform: translateX(-50%);
           transition: opacity 0.12s ease;
           user-select: none;
-          max-width: 95vw;
+          max-width: calc(100% - 24px);
+          box-sizing: border-box;
+          white-space: nowrap;
           overflow-x: auto;
+          scrollbar-width: none;
+        }
+
+        .selection-floating-bar::-webkit-scrollbar {
+          display: none;
         }
 
         .selection-floating-bar.hidden {

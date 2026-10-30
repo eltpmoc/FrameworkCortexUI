@@ -60,8 +60,9 @@ function getLocalizedMenus() {
         { type: 'divider' },
         { action: 'boolean-union', label: 'União / Soldar Formas (Weld)', shortcut: 'Ctrl+Shift+U' },
         { action: 'boolean-intersect', label: 'Interseção de Formas (Intersect)', shortcut: 'Ctrl+Shift+I' },
-        { action: 'boolean-subtract', label: 'Aparar / Subtração (Trim)', shortcut: '' },
-        { action: 'boolean-exclude', label: 'Excluir Sobreposição (Exclude)', shortcut: '' },
+        { action: 'boolean-subtract', label: 'Aparar (Frente corta Fundo)', shortcut: 'Ctrl+Shift+T' },
+        { action: 'boolean-subtract-reverse', label: 'Subtrair (Fundo corta Frente)', shortcut: 'Ctrl+Shift+S' },
+        { action: 'boolean-exclude', label: 'Excluir Sobreposição (Exclude / XOR)', shortcut: '' },
         { type: 'divider' },
         { action: 'bring-front', label: t('menu.bringFront'), shortcut: 'Ctrl+]' },
         { action: 'send-back', label: t('menu.sendBack'), shortcut: 'Ctrl+[' }

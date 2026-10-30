@@ -110,13 +110,16 @@ export class CortexInspector extends CortexElement {
             <button class="btn-primary" data-inspector-action="boolean-intersect" title="Interseção (Intersect): Mantém a área de sobreposição comum">
               ⚡ Interseção
             </button>
-            <button class="btn-secondary" data-inspector-action="boolean-subtract" title="Aparar (Trim / Subtract): O objeto superior apara o inferior">
-              Aparar
+            <button class="btn-secondary" data-inspector-action="boolean-subtract" title="Aparar (Frente corta Fundo): O objeto superior apara o inferior">
+              ✂️ Aparar
             </button>
-            <button class="btn-secondary" data-inspector-action="boolean-exclude" title="Excluir Sobreposição (Exclude / XOR)">
-              Excluir
+            <button class="btn-secondary" data-inspector-action="boolean-subtract-reverse" title="Subtrair (Fundo corta Frente): O objeto inferior apara o superior">
+              ✂️ Subtrair
             </button>
           </div>
+          <button class="btn-secondary" style="width: 100%; margin-top: 4px;" data-inspector-action="boolean-exclude" title="Excluir Sobreposição (Exclude / XOR): Mantém apenas as áreas não sobrepostas">
+            ⚡ Excluir Sobreposição (XOR)
+          </button>
 
           <!-- Alinhamentos de Design -->
           <div class="section-title" style="font-size: 10.5px; margin-top: 6px; color: var(--text-secondary);">Alinhamento de Objetos</div>

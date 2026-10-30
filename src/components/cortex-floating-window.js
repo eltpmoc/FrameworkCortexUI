@@ -110,6 +110,18 @@ export class CortexFloatingWindow extends CortexElement {
       return `<cortex-file-uploader style="width: 100%; height: 100%; display: block; overflow: auto;"></cortex-file-uploader>`;
     }
 
+    if (win.type === 'chat-photo') {
+      return `<cortex-chat-photo style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-chat-photo>`;
+    }
+
+    if (win.type === 'chat-initials') {
+      return `<cortex-chat-initials style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-chat-initials>`;
+    }
+
+    if (win.type === 'chat-showcase') {
+      return `<cortex-chat-showcase style="width: 100%; height: 100%; display: flex; flex-direction: column;"></cortex-chat-showcase>`;
+    }
+
     if (win.type === 'datatable') {
       const q = this._gridQuery.trim().toLowerCase();
       const filteredNodes = nodes.filter(
@@ -259,6 +271,24 @@ export class CortexFloatingWindow extends CortexElement {
         .floating-win.doc-medium-win .win-body {
           max-height: 76vh;
           height: 560px;
+        }
+
+        .floating-win.chat-win {
+          width: min(92vw, 480px);
+        }
+
+        .floating-win.chat-win .win-body {
+          max-height: 82vh;
+          height: 600px;
+        }
+
+        .floating-win.chat-showcase-win {
+          width: min(96vw, 1060px);
+        }
+
+        .floating-win.chat-showcase-win .win-body {
+          max-height: 84vh;
+          height: 640px;
         }
 
         .win-header {
@@ -460,7 +490,9 @@ export class CortexFloatingWindow extends CortexElement {
           (win) => {
             const isDocLarge = ['office-api', 'spreadsheet', 'rich-edit', 'file-manager'].includes(win.type);
             const isDocMedium = win.type === 'file-uploader';
-            const extraClass = isDocLarge ? 'doc-large-win' : (isDocMedium ? 'doc-medium-win' : (win.type === 'tree' ? 'tree-win' : ''));
+            const isChat = ['chat-photo', 'chat-initials'].includes(win.type);
+            const isChatShowcase = win.type === 'chat-showcase';
+            const extraClass = isDocLarge ? 'doc-large-win' : (isDocMedium ? 'doc-medium-win' : (isChatShowcase ? 'chat-showcase-win' : (isChat ? 'chat-win' : (win.type === 'tree' ? 'tree-win' : ''))));
             return `
         <div
           class="floating-win ${extraClass} ${this._activeWinId === win.id ? 'active-window' : 'inactive-window'}"

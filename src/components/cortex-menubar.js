@@ -82,6 +82,16 @@ function getLocalizedMenus() {
       ]
     },
     {
+      id: 'chat',
+      label: t('menu.chat'),
+      items: [
+        { action: 'open-chat-showcase-win', label: 'Chats Showcase (Foto vs Iniciais)', shortcut: 'Ctrl+Alt+C' },
+        { type: 'divider' },
+        { action: 'open-chat-photo-win', label: 'Chat Modelo 1 (Avatar com Foto)', shortcut: '' },
+        { action: 'open-chat-initials-win', label: 'Chat Modelo 2 (Iniciais Monograma JD)', shortcut: '' }
+      ]
+    },
+    {
       id: 'view',
       label: t('menu.view'),
       items: [
@@ -124,6 +134,10 @@ function getLocalizedMenus() {
         { action: 'open-rich-edit-win', label: 'Rich Edit (Editor de Texto Word A4)', shortcut: '' },
         { action: 'open-file-manager-win', label: 'File Manager (Gerenciador de Arquivos)', shortcut: '' },
         { action: 'open-file-uploader-win', label: 'File Uploader (Upload 15 MB)', shortcut: '' },
+        { type: 'divider' },
+        { action: 'open-chat-showcase-win', label: 'Chats Showcase (Foto vs Iniciais)', shortcut: '' },
+        { action: 'open-chat-photo-win', label: 'Chat Modelo 1 (Avatar com Foto)', shortcut: '' },
+        { action: 'open-chat-initials-win', label: 'Chat Modelo 2 (Iniciais Monograma)', shortcut: '' },
         { type: 'divider' },
         { action: 'toggle-left-dock', label: 'Toggle Tools Panel', shortcut: 'Tab' },
         { action: 'toggle-right-dock', label: 'Toggle Inspector Panel', shortcut: 'Shift+Tab' },

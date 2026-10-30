@@ -769,6 +769,52 @@ inputTel.value = CortexMask.phone('11988776655');         // "(11) 98877-6655"`,
     ]
   },
   {
+    category: '💬 Chat & Mensagens (Modelos Foto & Iniciais)',
+    items: [
+      {
+        id: 'chat-showcase',
+        title: '⚡ Chats Showcase (Foto vs Iniciais)',
+        tag: '<cortex-chat-showcase>',
+        badge: '2 Modelos Lado a Lado',
+        summary: 'Painel comparativo completo exibindo simultaneamente os dois modelos de chat: Modelo 1 com foto de perfil e Modelo 2 com monograma de iniciais (JD), incluindo envio interativo de mensagens e simulação de resposta inteligente.',
+        previewType: 'chat-showcase-preview',
+        code: `<cortex-chat-showcase></cortex-chat-showcase>`,
+        api: [
+          { name: 'model', type: 'Attribute ("photo" | "initials")', desc: 'Define a renderização visual entre foto de avatar ou monograma com iniciais.' },
+          { name: 'sendMessage(text)', type: 'Method', desc: 'Envia uma mensagem no chat ativo e aciona a resposta simulada do suporte.' },
+          { name: 'toggleRecording()', type: 'Method', desc: 'Alterna a gravação e envio de mensagem de áudio/voz simulada.' }
+        ]
+      },
+      {
+        id: 'chat-photo',
+        title: '📷 Chat Modelo 1 (Avatar com Foto)',
+        tag: '<cortex-chat-photo> / <cortex-chat model="photo">',
+        badge: 'Foto Circular + Balões Azuis',
+        summary: 'Chat interativo com avatar fotográfico circular de alta resolução do atendente de suporte à esquerda, cabeçalho com horário, balões cinza neutros para mensagens recebidas e balões azul suave agrupados para o usuário à direita.',
+        previewType: 'chat-photo-preview',
+        code: `<cortex-chat model="photo" title="Suporte ao Cliente"></cortex-chat>`,
+        api: [
+          { name: 'avatarUrl', type: 'Property (URL / DataURL)', desc: 'Permite definir ou fazer upload de qualquer foto de perfil do atendente.' },
+          { name: 'cortex-chat-message-sent', type: 'Custom Event', desc: 'Disparado ao enviar nova mensagem com payload { message, model }.' },
+          { name: 'cortex-chat-message-received', type: 'Custom Event', desc: 'Disparado ao receber resposta do suporte.' }
+        ]
+      },
+      {
+        id: 'chat-initials',
+        title: '🔤 Chat Modelo 2 (Iniciais Monograma JD)',
+        tag: '<cortex-chat-initials> / <cortex-chat model="initials">',
+        badge: 'Monograma Iniciais + Neutro',
+        summary: 'Chat moderno que diferencia os participantes através de badges circulares elegantes com as iniciais do nome (ex: JD para John Doe), com balões suaves, separadores de data e caixa de texto com microfone e envio.',
+        previewType: 'chat-initials-preview',
+        code: `<cortex-chat model="initials" title="Atendimento Corporativo"></cortex-chat>`,
+        api: [
+          { name: 'initials', type: 'String', desc: 'Iniciais geradas automaticamente a partir do nome ou definidas customizadamente.' },
+          { name: 'Enter Key', type: 'Keyboard Shortcut', desc: 'Pressione Enter para enviar a mensagem diretamente ou Shift+Enter para quebra de linha.' }
+        ]
+      }
+    ]
+  },
+  {
     category: '🪟 Janelas, Modais & Overlays',
     items: [
       {
@@ -1393,6 +1439,27 @@ export class CortexDocs extends CortexElement {
         return `
           <div style="max-height: 520px; overflow: auto; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; background: #fff;">
             <cortex-file-uploader></cortex-file-uploader>
+          </div>
+        `;
+
+      case 'chat-showcase-preview':
+        return `
+          <div style="height: 580px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-chat-showcase></cortex-chat-showcase>
+          </div>
+        `;
+
+      case 'chat-photo-preview':
+        return `
+          <div style="height: 520px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-chat-photo></cortex-chat-photo>
+          </div>
+        `;
+
+      case 'chat-initials-preview':
+        return `
+          <div style="height: 520px; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden;">
+            <cortex-chat-initials></cortex-chat-initials>
           </div>
         `;
 

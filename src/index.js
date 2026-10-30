@@ -8,6 +8,7 @@ import './components/cortex-widgets.js';
 import './components/cortex-enterprise-views.js';
 import './components/cortex-planning-views.js';
 import './components/cortex-document-management.js';
+import './components/cortex-chat.js';
 import './components/cortex-menubar.js';
 import './components/cortex-tabbar.js';
 import './components/cortex-toolbar.js';
@@ -284,6 +285,30 @@ window.addEventListener('cortex-menu-action', async (e) => {
         id: 'win-file-uploader',
         title: 'Cortex File Uploader — Drag & Drop (15 MB)',
         type: 'file-uploader'
+      });
+      break;
+
+    case 'open-chat-photo-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-chat-photo',
+        title: 'Cortex Chat (Modelo 1 — Foto / Avatar)',
+        type: 'chat-photo'
+      });
+      break;
+
+    case 'open-chat-initials-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-chat-initials',
+        title: 'Cortex Chat (Modelo 2 — Iniciais Monograma)',
+        type: 'chat-initials'
+      });
+      break;
+
+    case 'open-chat-showcase-win':
+      floatingWindowsEl?.openWindow({
+        id: 'win-chat-showcase',
+        title: 'Cortex Chats Showcase — Modelo 1 (Foto) & Modelo 2 (Iniciais)',
+        type: 'chat-showcase'
       });
       break;
 

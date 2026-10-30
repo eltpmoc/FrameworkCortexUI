@@ -1,0 +1,21 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cortexGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="60%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+    <linearGradient id="cortexGradIcon2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#09090b"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" stroke="#38bdf8" stroke-opacity="0.3"/>
+  <path d="M 23 8 C 17.5 4.5 10 5.5 6.5 11 C 3.2 16.2 4.2 23 9.5 26.5 C 15 30 22 28.5 25.5 23" 
+        stroke="url(#cortexGradIcon)" stroke-width="2.8" stroke-linecap="round" />
+  <path d="M 17 11 L 26 21 M 26 11 L 17 21" 
+        stroke="url(#cortexGradIcon2)" stroke-width="2.6" stroke-linecap="round" />
+  <circle cx="8" cy="15" r="2.5" fill="#00f2fe" />
+  <circle cx="21.5" cy="16" r="1.8" fill="#ffffff" />
+</svg>

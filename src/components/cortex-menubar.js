@@ -397,8 +397,6 @@ export class CortexMenubar extends CortexElement {
     const hasBadgeAttr = this.hasAttribute('app-badge');
     const badgeAttr = this.getAttribute('app-badge');
     const noBadge = this.hasAttribute('no-badge') || (hasBadgeAttr && (!badgeAttr || badgeAttr === 'none'));
-    const badgeAttr = this.getAttribute('app-badge');
-    const noBadge = this.hasAttribute('no-badge');
     const rawBadge = noBadge ? '' : (badgeAttr || AppState.get('appBadge') || 'cortex');
     const isCortexLogo = !rawBadge || rawBadge === 'cortex' || rawBadge === 'Id' || rawBadge === 'cx' || rawBadge === 'default';
     const showDocs = !this.hasAttribute('no-docs');

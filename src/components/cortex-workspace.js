@@ -3,7 +3,18 @@ import { CortexElement } from '../core/CortexElement.js';
 import { AppState } from '../core/Store.js';
 import { RulerRenderer } from '../engine/RulerRenderer.js';
 import { CanvasEngine } from '../engine/CanvasEngine.js';
-import { CortexRect, CortexLine, CortexText, CortexPath } from '../engine/nodes/index.js';
+import {
+  CortexRect,
+  CortexLine,
+  CortexText,
+  CortexPath,
+  CortexEllipse,
+  CortexPolygon,
+  CortexStar,
+  CortexDiamond,
+  CortexArrow,
+  CortexCallout
+} from '../engine/nodes/index.js';
 import { CortexModal } from './cortex-modal.js';
 
 export class CortexWorkspace extends CortexElement {
@@ -18,13 +29,16 @@ export class CortexWorkspace extends CortexElement {
     this._lastPinchDist = null;
     this._lastPinchCenter = null;
 
-    // Estado de Interação (Pan, Move, Resize pelas Alças, Create, Draw Path)
-    this._interactionMode = null; // 'pan' | 'move-node' | 'resize-node' | 'create-node' | 'draw-path' | null
+    // Estado de Interação (Pan, Move, Resize pelas Alças, Rotate, Create, Draw Path)
+    this._interactionMode = null; // 'pan' | 'move-node' | 'resize-node' | 'rotate-node' | 'create-node' | 'draw-path' | null
     this._activeResizeHandle = null;
     this._dragStartScreen = { x: 0, y: 0 };
     this._dragStartWorld = { x: 0, y: 0 };
     this._initialPan = { x: 0, y: 0 };
     this._initialBounds = { x: 0, y: 0, width: 0, height: 0 };
+    this._rotateCenter = { x: 0, y: 0 };
+    this._initialNodeRotation = 0;
+    this._dragStartAngle = 0;
     this._draftNode = null;
     this._isSpacePressed = false;
     this._didModifyScene = false;
@@ -178,13 +192,31 @@ export class CortexWorkspace extends CortexElement {
       canvas.style.cursor = customCursor;
     } else if (this._interactionMode === 'pan') {
       canvas.style.cursor = 'grabbing';
+    } else if (this._interactionMode === 'rotate-node' || tool === 'rotate') {
+      canvas.style.cursor = 'crosshair';
     } else if (this._isSpacePressed || tool === 'pan') {
       canvas.style.cursor = 'grab';
     } else if (tool === 'zoom') {
       canvas.style.cursor = 'zoom-in';
     } else if (tool === 'text') {
       canvas.style.cursor = 'text';
-    } else if (tool === 'rect' || tool === 'line' || tool === 'pen') {
+    } else if (tool === 'eyedropper') {
+      canvas.style.cursor = 'crosshair';
+    } else if (tool === 'eraser') {
+      canvas.style.cursor = 'not-allowed';
+    } else if (
+      tool === 'rect' ||
+      tool === 'rounded-rect' ||
+      tool === 'ellipse' ||
+      tool === 'polygon' ||
+      tool === 'star' ||
+      tool === 'diamond' ||
+      tool === 'arrow' ||
+      tool === 'callout' ||
+      tool === 'line' ||
+      tool === 'pen' ||
+      tool === 'pencil'
+    ) {
       canvas.style.cursor = 'crosshair';
     } else {
       canvas.style.cursor = 'default';
@@ -348,9 +380,48 @@ export class CortexWorkspace extends CortexElement {
         return;
       }
 
-      // Ferramenta Pen / Path Vetorial (CortexPath)
+      // Ferramenta Conta-gotas (Eyedropper)
+      if (tool === 'eyedropper') {
+        const hitNode = this.engine.hitTest(worldPt.x, worldPt.y, pointerType);
+        if (hitNode) {
+          if (hitNode.fill) AppState.setState({ fillColor: hitNode.fill });
+          if (hitNode.stroke) AppState.setState({ strokeColor: hitNode.stroke });
+          CortexModal.toast(`Cores copiadas: ${hitNode.fill || hitNode.stroke}`, 'info', 1500);
+        }
+        return;
+      }
+
+      // Ferramenta Borracha (Eraser)
+      if (tool === 'eraser') {
+        const hitNode = this.engine.hitTest(worldPt.x, worldPt.y, pointerType);
+        if (hitNode) {
+          this.engine.removeNode(hitNode.id);
+          CortexModal.toast('Elemento apagado', 'info', 1200);
+        }
+        return;
+      }
+
+      // Ferramenta Rotação Direta (Rotate Tool)
+      if (tool === 'rotate') {
+        const hitNode = this.engine.hitTest(worldPt.x, worldPt.y, pointerType);
+        if (hitNode) {
+          this.engine.selectNode(hitNode);
+        }
+        if (this.engine.selectedNode) {
+          this._interactionMode = 'rotate-node';
+          this._rotateCenter = this.engine.selectedNode.getCenter();
+          this._initialNodeRotation = this.engine.selectedNode.rotation || 0;
+          this._dragStartAngle =
+            Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
+            (180 / Math.PI);
+          this._updateCursor(tool, 'crosshair');
+          return;
+        }
+      }
+
+      // Ferramenta Caneta Vetorial (Pen) ou Lápis Livre (Pencil)
       const activePage = Number(AppState.get('currentPage')) || 1;
-      if (tool === 'pen') {
+      if (tool === 'pen' || tool === 'pencil') {
         this._interactionMode = 'draw-path';
         this._draftNode = new CortexPath({
           page: activePage,
@@ -358,40 +429,145 @@ export class CortexWorkspace extends CortexElement {
           y: Math.round(worldPt.y),
           points: [{ x: 0, y: 0 }],
           stroke: AppState.get('strokeColor') || '#1473e6',
-          strokeWidth: 2.5
+          strokeWidth: tool === 'pencil' ? 2 : 2.5
         });
         this.engine.addNode(this._draftNode, true, false);
         this._didModifyScene = true;
         return;
       }
 
-      // Criação de Retângulo ou Linha
-      if (tool === 'rect' || tool === 'line') {
+      // Ferramentas de Criação de Formas Vetoriais Geométricas
+      const CREATION_TOOLS = [
+        'rect',
+        'rounded-rect',
+        'ellipse',
+        'polygon',
+        'star',
+        'diamond',
+        'arrow',
+        'callout',
+        'line'
+      ];
+      if (CREATION_TOOLS.includes(tool)) {
         this._interactionMode = 'create-node';
         this._dragStartWorld = worldPt;
+        const fill = AppState.get('fillColor') || '#10b981';
+        const stroke = AppState.get('strokeColor') || '#18181b';
+        const strokeWidth = 2;
 
-        if (tool === 'rect') {
-          this._draftNode = new CortexRect({
-            page: activePage,
-            x: Math.round(worldPt.x),
-            y: Math.round(worldPt.y),
-            width: 1,
-            height: 1,
-            fill: AppState.get('fillColor') || '#10b981',
-            stroke: AppState.get('strokeColor') || '#18181b',
-            strokeWidth: 2
-          });
-        } else {
-          this._draftNode = new CortexLine({
-            page: activePage,
-            x: Math.round(worldPt.x),
-            y: Math.round(worldPt.y),
-            width: 1,
-            height: 1,
-            stroke: AppState.get('strokeColor') || '#1473e6',
-            strokeWidth: 2.5
-          });
+        switch (tool) {
+          case 'rect':
+            this._draftNode = new CortexRect({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth
+            });
+            break;
+          case 'rounded-rect':
+            this._draftNode = new CortexRect({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth,
+              cornerRadius: 16
+            });
+            break;
+          case 'ellipse':
+            this._draftNode = new CortexEllipse({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth
+            });
+            break;
+          case 'polygon':
+            this._draftNode = new CortexPolygon({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth,
+              sides: 3
+            });
+            break;
+          case 'star':
+            this._draftNode = new CortexStar({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth,
+              pointsCount: 5
+            });
+            break;
+          case 'diamond':
+            this._draftNode = new CortexDiamond({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth
+            });
+            break;
+          case 'arrow':
+            this._draftNode = new CortexArrow({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth
+            });
+            break;
+          case 'callout':
+            this._draftNode = new CortexCallout({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              fill,
+              stroke,
+              strokeWidth
+            });
+            break;
+          case 'line':
+            this._draftNode = new CortexLine({
+              page: activePage,
+              x: Math.round(worldPt.x),
+              y: Math.round(worldPt.y),
+              width: 1,
+              height: 1,
+              stroke: AppState.get('strokeColor') || '#1473e6',
+              strokeWidth: 2.5
+            });
+            break;
         }
+
         this.engine.addNode(this._draftNode, true, false);
         this._didModifyScene = true;
         return;
@@ -421,6 +597,17 @@ export class CortexWorkspace extends CortexElement {
           pointerType
         );
         if (handle) {
+          if (handle.id === 'rotate') {
+            this._interactionMode = 'rotate-node';
+            this._rotateCenter = this.engine.selectedNode.getCenter();
+            this._initialNodeRotation = this.engine.selectedNode.rotation || 0;
+            this._dragStartAngle =
+              Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
+              (180 / Math.PI);
+            this._updateCursor(tool, 'grab');
+            return;
+          }
+
           this._interactionMode = 'resize-node';
           this._activeResizeHandle = handle.id;
           this._dragStartWorld = worldPt;
@@ -508,6 +695,27 @@ export class CortexWorkspace extends CortexElement {
         return;
       }
 
+      // Rotação Interativa de Objeto
+      if (this._interactionMode === 'rotate-node' && this.engine.selectedNode) {
+        const currentAngle =
+          Math.atan2(worldPt.y - this._rotateCenter.y, worldPt.x - this._rotateCenter.x) *
+          (180 / Math.PI);
+        const deltaAngle = currentAngle - this._dragStartAngle;
+        let nextRot = (this._initialNodeRotation + deltaAngle) % 360;
+        if (nextRot < 0) nextRot += 360;
+
+        // Ao segurar Shift, trava em passos de 15 graus (0°, 15°, 30°, 45°, 90°, etc.)
+        if (e.shiftKey) {
+          nextRot = Math.round(nextRot / 15) * 15;
+        }
+
+        this.engine.selectedNode.rotation = Math.round(nextRot) % 360;
+        this._didModifyScene = true;
+        AppState.setState({ selectedNode: this.engine.selectedNode.toJSON() });
+        this.engine.requestRender();
+        return;
+      }
+
       // Redimensionamento pelas Alças (Handles)
       if (this._interactionMode === 'resize-node' && this.engine.selectedNode) {
         this._applyHandleResize(this.engine.selectedNode, this._activeResizeHandle, worldPt);
@@ -529,17 +737,26 @@ export class CortexWorkspace extends CortexElement {
         return;
       }
 
-      // Desenho de Caminho Vetorial (CortexPath)
+      // Desenho de Caminho Vetorial (CortexPath / Pencil)
       if (this._interactionMode === 'draw-path' && this._draftNode) {
         this._draftNode.addWorldPoint(worldPt.x, worldPt.y);
         this.engine.requestRender();
         return;
       }
 
-      // Desenho de Retângulo ou Linha
+      // Criação de Formas Vetoriais (com suporte a Shift para proporção 1:1)
       if (this._interactionMode === 'create-node' && this._draftNode) {
-        this._draftNode.width = Math.round(worldPt.x - this._dragStartWorld.x);
-        this._draftNode.height = Math.round(worldPt.y - this._dragStartWorld.y);
+        let w = worldPt.x - this._dragStartWorld.x;
+        let h = worldPt.y - this._dragStartWorld.y;
+
+        if (e.shiftKey && this._draftNode.type !== 'line') {
+          const side = Math.max(Math.abs(w), Math.abs(h));
+          w = w < 0 ? -side : side;
+          h = h < 0 ? -side : side;
+        }
+
+        this._draftNode.width = Math.round(w);
+        this._draftNode.height = Math.round(h);
         AppState.setState({ selectedNode: this._draftNode.toJSON() });
         this.engine.requestRender();
         return;
@@ -591,6 +808,15 @@ export class CortexWorkspace extends CortexElement {
         this._draftNode = null;
         AppState.setState({ activeTool: 'select' });
         this.engine.syncSceneState(true);
+      } else if (this._interactionMode === 'rotate-node') {
+        if (this._didModifyScene) {
+          this.engine.syncSceneState(true);
+        }
+        if (AppState.get('activeTool') === 'rotate') {
+          // Mantém na ferramenta rotate se o usuário a selecionou explicitamente
+        } else {
+          AppState.setState({ activeTool: 'select' });
+        }
       } else if (this._didModifyScene) {
         this.engine.syncSceneState(true);
       }

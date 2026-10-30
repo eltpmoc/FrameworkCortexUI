@@ -397,7 +397,10 @@ export class CortexMenubar extends CortexElement {
     const hasBadgeAttr = this.hasAttribute('app-badge');
     const badgeAttr = this.getAttribute('app-badge');
     const noBadge = this.hasAttribute('no-badge') || (hasBadgeAttr && (!badgeAttr || badgeAttr === 'none'));
-    const badge = noBadge ? '' : (badgeAttr || AppState.get('appBadge') || 'Id');
+    const badgeAttr = this.getAttribute('app-badge');
+    const noBadge = this.hasAttribute('no-badge');
+    const rawBadge = noBadge ? '' : (badgeAttr || AppState.get('appBadge') || 'cortex');
+    const isCortexLogo = !rawBadge || rawBadge === 'cortex' || rawBadge === 'Id' || rawBadge === 'cx' || rawBadge === 'default';
     const showDocs = !this.hasAttribute('no-docs');
     const showLogin = !this.hasAttribute('no-login');
     const showPresets = !this.hasAttribute('no-presets') && !this.hasAttribute('no-preset');
@@ -444,22 +447,53 @@ export class CortexMenubar extends CortexElement {
           flex-shrink: 0 !important;
         }
 
-        /* Ícone da Aplicação Desktop (ex: "Id", "Cx", etc.) */
-        .app-badge {
+        /* Emblema & Logo Oficial FrameworkCortexUI */
+        .app-badge-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 20px;
+          background: transparent;
+          border: none;
+          padding: 0;
+          margin-right: 8px;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: transform var(--transition-fast), filter var(--transition-fast);
+        }
+
+        .app-badge-btn:hover {
+          transform: scale(1.08);
+          filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.6));
+        }
+
+        .cortex-logo-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 5px;
+          background: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+          border: 1px solid rgba(56, 189, 248, 0.4);
+          box-shadow: 0 0 8px rgba(14, 165, 233, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .app-badge-custom {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 20px;
           height: 20px;
-          border-radius: 3px;
-          background-color: #2c1320;
-          border: 1px solid #f43f5e;
-          color: #fb7185;
+          padding: 0 5px;
+          border-radius: 4px;
+          background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+          border: 1px solid #6366f1;
+          color: #a5b4fc;
           font-weight: 700;
           font-size: 11px;
-          margin-right: 6px;
-          letter-spacing: -0.03em;
-          flex-shrink: 0;
+          letter-spacing: -0.02em;
         }
 
         .menu-list {
@@ -715,7 +749,42 @@ export class CortexMenubar extends CortexElement {
           </svg>
         </button>
 
-        ${badge ? `<span class="app-badge" title="CortexUI Desktop Application">${badge}</span>` : ''}
+        ${
+          noBadge
+            ? ''
+            : isCortexLogo
+            ? `
+          <button class="app-badge-btn" title="Framework CortexUI — Design &amp; Architecture" aria-label="CortexUI Logo">
+            <span class="cortex-logo-badge">
+              <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cortexGradBar" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00f2fe" />
+                    <stop offset="60%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#818cf8" />
+                  </linearGradient>
+                  <linearGradient id="cortexGradBar2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#f43f5e" />
+                    <stop offset="100%" stop-color="#c084fc" />
+                  </linearGradient>
+                </defs>
+                <!-- Anel Órbita Neural C -->
+                <path d="M 23 8 C 17.5 4.5 10 5.5 6.5 11 C 3.2 16.2 4.2 23 9.5 26.5 C 15 30 22 28.5 25.5 23" 
+                      stroke="url(#cortexGradBar)" stroke-width="3" stroke-linecap="round" />
+                <!-- Cruz / Vértice X -->
+                <path d="M 17 11 L 26 21 M 26 11 L 17 21" 
+                      stroke="url(#cortexGradBar2)" stroke-width="2.8" stroke-linecap="round" />
+                <!-- Nó Sináptico Brilhante -->
+                <circle cx="8" cy="15" r="2.8" fill="#00f2fe" />
+                <circle cx="21.5" cy="16" r="1.8" fill="#ffffff" />
+              </svg>
+            </span>
+          </button>`
+            : `
+          <button class="app-badge-btn" title="Aplicação: ${rawBadge}" aria-label="${rawBadge}">
+            <span class="app-badge-custom">${rawBadge}</span>
+          </button>`
+        }
 
         <ul class="menu-list" role="menubar">
           ${menus

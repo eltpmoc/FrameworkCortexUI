@@ -133,6 +133,40 @@ export class CortexInspector extends CortexElement {
           </label>
         </div>
 
+        <!-- Rotação Interativa do Elemento -->
+        <div class="slider-group">
+          <div class="row-between">
+            <span class="prefix">Rotação / Ângulo</span>
+            <span class="val-readout">${Math.round(node.rotation || 0)}°</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px;">
+            <input
+              type="range"
+              class="touch-slider"
+              style="flex: 1;"
+              data-bind-prop="rotation"
+              min="0"
+              max="360"
+              step="1"
+              value="${Math.round(node.rotation || 0)}"
+            />
+            <input
+              type="number"
+              class="mini-num"
+              style="width: 56px;"
+              data-bind-prop="rotation"
+              min="0"
+              max="360"
+              value="${Math.round(node.rotation || 0)}"
+            />
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <button class="btn-rot-step" data-rot-step="-90" title="Girar 90° à esquerda" style="flex: 1; height: 22px; font-size: 11px; background: var(--bg-input); border: 1px solid var(--border-input); border-radius: 3px; color: var(--text-primary); cursor: pointer;">&#8634; -90&deg;</button>
+            <button class="btn-rot-step" data-rot-step="90" title="Girar 90° à direita" style="flex: 1; height: 22px; font-size: 11px; background: var(--bg-input); border: 1px solid var(--border-input); border-radius: 3px; color: var(--text-primary); cursor: pointer;">&#8635; +90&deg;</button>
+            <button class="btn-rot-reset" data-rot-reset="0" title="Redefinir para 0°" style="flex: 1; height: 22px; font-size: 11px; background: var(--bg-input); border: 1px solid var(--border-input); border-radius: 3px; color: var(--text-primary); cursor: pointer;">0&deg; Reset</button>
+          </div>
+        </div>
+
         <!-- Preenchimento (Fill) e Contorno (Stroke) com <cortex-color-picker> Moderno -->
         <div class="grid-2">
           <cortex-color-picker
@@ -218,6 +252,58 @@ export class CortexInspector extends CortexElement {
               <input type="text" data-bind-prop="text" value="${node.text || ''}" />
             </label>
             <cortex-font-picker id="picker-font"></cortex-font-picker>`
+            : ''
+        }
+
+        ${
+          node.type === 'polygon'
+            ? `
+            <div class="slider-group">
+              <div class="row-between">
+                <span class="prefix">Lados do Polígono</span>
+                <span class="val-readout">${node.sides ?? 3} lados</span>
+              </div>
+              <input
+                type="range"
+                class="touch-slider"
+                data-bind-prop="sides"
+                min="3"
+                max="12"
+                step="1"
+                value="${node.sides ?? 3}"
+              />
+            </div>`
+            : ''
+        }
+
+        ${
+          node.type === 'star'
+            ? `
+            <div class="slider-group">
+              <div class="row-between">
+                <span class="prefix">Pontas da Estrela</span>
+                <span class="val-readout">${node.pointsCount ?? 5} pontas</span>
+              </div>
+              <input
+                type="range"
+                class="touch-slider"
+                data-bind-prop="pointsCount"
+                min="3"
+                max="16"
+                step="1"
+                value="${node.pointsCount ?? 5}"
+              />
+            </div>`
+            : ''
+        }
+
+        ${
+          node.type === 'callout'
+            ? `
+            <label class="input-prefixed">
+              <span class="prefix">Texto:</span>
+              <input type="text" data-bind-prop="text" value="${node.text || 'Mensagem'}" />
+            </label>`
             : ''
         }
 
@@ -986,6 +1072,32 @@ export class CortexInspector extends CortexElement {
 
         input.addEventListener('input', () => dispatchPropUpdate(false));
         input.addEventListener('change', () => dispatchPropUpdate(true));
+      });
+
+      // Botões de Rotação Rápida (-90°, +90°, Reset 0°)
+      this.shadowRoot.querySelectorAll('[data-rot-step]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const step = Number(btn.dataset.rotStep);
+          let next = ((selectedNode.rotation || 0) + step) % 360;
+          if (next < 0) next += 360;
+          this.emit('cortex-update-property', {
+            id: selectedNode.id,
+            prop: 'rotation',
+            value: Math.round(next),
+            commitHistory: true
+          });
+        });
+      });
+
+      this.shadowRoot.querySelectorAll('[data-rot-reset]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.emit('cortex-update-property', {
+            id: selectedNode.id,
+            prop: 'rotation',
+            value: 0,
+            commitHistory: true
+          });
+        });
       });
     }
 

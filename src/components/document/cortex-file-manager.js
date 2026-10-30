@@ -7,19 +7,19 @@ import { CortexModal } from '../cortex-modal.js';
  * Gerenciador de arquivos completo com árvore hierárquica lateral (Files > Cities, Contact, Widescreen...),
  * barra de ferramentas (+ New directory, Upload files, Refresh, Grid/List toggle),
  * tabela de arquivos com seleção múltipla e menu de contexto funcional (Rename, Move to, Copy to, Delete, Download).
- * 100% nativo, sem bibliotecas externas.
+ * Totalmente compatível com todos os temas do CortexUI e 100% nativo.
  */
 export class CortexFileManager extends CortexElement {
   constructor() {
     super();
-    this._viewMode = 'list'; // 'list' | 'grid'
+    this._viewMode = 'grid'; // 'list' | 'grid'
     this._activeFolder = 'Widescreen';
-    this._selectedFileIds = new Set(['file-2']); // swimmer-underwater.jpg selecionado por padrão como na imagem
+    this._selectedFileIds = new Set(['file-1']);
     this._contextMenu = {
-      visible: true, // Aberto por padrão sobre o item selecionado como na imagem 4
-      targetFileId: 'file-2',
-      x: 520,
-      y: 140
+      visible: false,
+      targetFileId: null,
+      x: 0,
+      y: 0
     };
 
     // Árvore de Diretórios
@@ -31,7 +31,7 @@ export class CortexFileManager extends CortexElement {
       { id: 'widescreen', name: 'Widescreen', hasChildren: false }
     ];
 
-    // Arquivos no diretório Widescreen (exatamente como na Imagem 4)
+    // Arquivos no diretório Widescreen (exatamente como na Imagem de referência)
     this._files = [
       { id: 'file-1', name: 'man-climbing-on-limestone-wall.jpg', size: '34.3 kb', type: 'image', folder: 'Widescreen' },
       { id: 'file-2', name: 'swimmer-underwater.jpg', size: '51.8 kb', type: 'image', folder: 'Widescreen' },
@@ -43,6 +43,10 @@ export class CortexFileManager extends CortexElement {
       { id: 'file-8', name: 'Destiny_Clark.jpg', size: '12.2 kb', type: 'image', folder: 'Widescreen' },
       { id: 'file-9', name: 'Gary_Rubio.jpg', size: '9.1 kb', type: 'image', folder: 'Widescreen' }
     ];
+  }
+
+  onMount() {
+    this.watchState('theme', () => this.render());
   }
 
   async _newDirectory() {
@@ -64,7 +68,7 @@ export class CortexFileManager extends CortexElement {
     }
   }
 
-  _uploadFiles(event) {
+  _uploadFiles(_event) {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
@@ -212,7 +216,7 @@ export class CortexFileManager extends CortexElement {
                 <td style="text-align: center;">
                   <input type="checkbox" class="file-chk" data-file-id="${file.id}" ${isSelected ? 'checked' : ''} />
                 </td>
-                <td style="text-align: center; color: #64748b;">
+                <td style="text-align: center; color: var(--accent-text, #3b82f6);">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -242,7 +246,7 @@ export class CortexFileManager extends CortexElement {
           return `
             <div class="file-card ${isSelected ? 'selected' : ''}" data-file-id="${file.id}">
               <div class="card-thumb">
-                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue, #2563eb)" stroke-width="1.5">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <polyline points="21 15 16 10 5 21"/>
@@ -274,11 +278,11 @@ export class CortexFileManager extends CortexElement {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Copy to
         </button>
-        <button class="ctx-item" data-ctx="delete" style="color: #ef4444;">
+        <button class="ctx-item" data-ctx="delete" style="color: var(--status-error, #ef4444);">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           Delete
         </button>
-        <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+        <div style="height: 1px; background: var(--border-subtle, rgba(255,255,255,0.08)); margin: 4px 0;"></div>
         <button class="ctx-item" data-ctx="download">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download
@@ -296,9 +300,9 @@ export class CortexFileManager extends CortexElement {
           flex-direction: column;
           width: 100%;
           height: 100%;
-          background: #ffffff;
-          color: #1e293b;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background: var(--bg-app, #18181b);
+          color: var(--text-primary, #e4e4e7);
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
           overflow: hidden;
           box-sizing: border-box;
           position: relative;
@@ -309,54 +313,62 @@ export class CortexFileManager extends CortexElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 10px 18px;
-          border-bottom: 1px solid #e2e8f0;
-          background: #ffffff;
+          padding: 8px 16px;
+          border-bottom: 1px solid var(--border-subtle, #333337);
+          background: var(--bg-panel, #252526);
           user-select: none;
         }
 
         .action-group {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .fm-btn {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: 6px;
+          background: var(--bg-input, #1b1b1d);
+          border: 1px solid var(--border-input, #3c3c42);
+          border-radius: var(--radius-sm, 4px);
           padding: 6px 12px;
-          font-size: 13px;
+          font-size: var(--text-xs, 12px);
           font-weight: 500;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           cursor: pointer;
-          transition: background 0.12s ease;
+          transition: background 0.12s ease, border-color 0.12s ease;
         }
 
         .fm-btn:hover {
-          background: #f1f5f9;
+          background: var(--bg-hover, #37373d);
+          border-color: var(--border-focus, #1473e6);
         }
 
         .icon-btn {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border-radius: 6px;
-          border: 1px solid #e2e8f0;
-          background: #ffffff;
+          border-radius: var(--radius-sm, 4px);
+          border: 1px solid var(--border-input, #3c3c42);
+          background: var(--bg-input, #1b1b1d);
           cursor: pointer;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
           transition: all 0.12s ease;
         }
 
         .icon-btn:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
+          background: var(--bg-hover, #37373d);
+          color: var(--text-primary, #e4e4e7);
+          border-color: var(--border-focus, #1473e6);
+        }
+
+        .icon-btn.active {
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.22));
+          border-color: var(--accent-blue, #1473e6);
+          color: var(--accent-text, #60a5fa);
         }
 
         /* Layout Dividido (Árvore + Arquivos) */
@@ -369,10 +381,10 @@ export class CortexFileManager extends CortexElement {
         /* Coluna Lateral da Árvore */
         .fm-sidebar {
           width: 220px;
-          min-width: 200px;
-          border-right: 1px solid #e2e8f0;
-          padding: 14px 10px;
-          background: #ffffff;
+          min-width: 180px;
+          border-right: 1px solid var(--border-subtle, #333337);
+          padding: 12px 8px;
+          background: var(--bg-panel, #252526);
           overflow-y: auto;
           user-select: none;
         }
@@ -381,15 +393,15 @@ export class CortexFileManager extends CortexElement {
           display: flex;
           align-items: center;
           gap: 8px;
-          font-size: 13.5px;
+          font-size: var(--text-sm, 13px);
           font-weight: 600;
-          color: #1e293b;
+          color: var(--text-primary, #e4e4e7);
           padding: 6px 8px;
-          border-radius: 4px;
+          border-radius: var(--radius-xs, 2px);
         }
 
         .tree-sub-list {
-          padding-left: 18px;
+          padding-left: 14px;
           margin-top: 4px;
           display: flex;
           flex-direction: column;
@@ -401,21 +413,21 @@ export class CortexFileManager extends CortexElement {
           align-items: center;
           gap: 8px;
           padding: 6px 10px;
-          border-radius: 6px;
-          font-size: 13px;
-          color: #475569;
+          border-radius: var(--radius-sm, 4px);
+          font-size: var(--text-xs, 12px);
+          color: var(--text-secondary, #a1a1aa);
           cursor: pointer;
           transition: background 0.12s ease, color 0.12s ease;
         }
 
         .tree-node:hover {
-          background: #f8fafc;
-          color: #0f172a;
+          background: var(--bg-hover, #37373d);
+          color: var(--text-primary, #e4e4e7);
         }
 
         .tree-node.active {
-          background: #f1f5f9;
-          color: #0f172a;
+          background: var(--bg-hover, #37373d);
+          color: var(--accent-text, #60a5fa);
           font-weight: 600;
         }
 
@@ -425,7 +437,7 @@ export class CortexFileManager extends CortexElement {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          background: #ffffff;
+          background: var(--bg-app, #18181b);
         }
 
         /* Breadcrumb */
@@ -433,23 +445,27 @@ export class CortexFileManager extends CortexElement {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 10px 18px;
-          border-bottom: 1px solid #e2e8f0;
-          font-size: 13px;
-          color: #64748b;
+          padding: 8px 16px;
+          border-bottom: 1px solid var(--border-subtle, #333337);
+          background: var(--bg-panel-header, #1f1f22);
+          font-size: var(--text-xs, 12px);
+          color: var(--text-secondary, #a1a1aa);
           user-select: none;
         }
 
         .btn-up-dir {
           background: transparent;
           border: none;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
           cursor: pointer;
           font-size: 14px;
           padding: 2px 6px;
-          border-radius: 4px;
+          border-radius: var(--radius-xs, 2px);
         }
-        .btn-up-dir:hover { background: #f1f5f9; }
+        .btn-up-dir:hover {
+          background: var(--bg-hover, #37373d);
+          color: var(--text-primary, #e4e4e7);
+        }
 
         .crumb-path {
           display: flex;
@@ -458,7 +474,7 @@ export class CortexFileManager extends CortexElement {
         }
 
         .crumb-active {
-          color: #0f172a;
+          color: var(--text-primary, #e4e4e7);
           font-weight: 600;
         }
 
@@ -472,36 +488,36 @@ export class CortexFileManager extends CortexElement {
         .file-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 13px;
+          font-size: var(--text-xs, 12px);
           user-select: none;
         }
 
         .file-table th {
-          background: #ffffff;
-          color: #475569;
+          background: var(--bg-panel-header, #1f1f22);
+          color: var(--text-secondary, #a1a1aa);
           font-weight: 600;
-          padding: 10px 14px;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 8px 14px;
+          border-bottom: 1px solid var(--border-subtle, #333337);
           text-align: left;
         }
 
         .file-row {
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid var(--border-subtle, #333337);
           cursor: pointer;
           transition: background 0.1s ease;
         }
 
         .file-row:hover {
-          background: #f8fafc;
+          background: var(--bg-hover, #37373d);
         }
 
         .file-row.selected {
-          background: #eef5ff;
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.22));
         }
 
         .file-row td {
-          padding: 9px 14px;
-          color: #1e293b;
+          padding: 8px 14px;
+          color: var(--text-primary, #e4e4e7);
         }
 
         .file-name-cell {
@@ -510,20 +526,19 @@ export class CortexFileManager extends CortexElement {
 
         .file-size-cell {
           text-align: right;
-          color: #64748b;
-          font-size: 12.5px;
+          color: var(--text-muted, #71717a);
         }
 
-        /* Menu de Contexto Suspenso (Imagem 4) */
+        /* Menu de Contexto Suspenso Posicionado em Fixed */
         .context-menu-box {
-          position: absolute;
-          background: #ffffff;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-          width: 155px;
-          padding: 6px 0;
-          z-index: 1000;
+          position: fixed;
+          background: var(--bg-elevated, #2a2a2d);
+          border: 1px solid var(--border-input, #3c3c42);
+          border-radius: var(--radius-md, 6px);
+          box-shadow: var(--shadow-dropdown, 0 10px 30px rgba(0,0,0,0.5));
+          width: 165px;
+          padding: 4px 0;
+          z-index: 999999;
           display: flex;
           flex-direction: column;
         }
@@ -535,9 +550,9 @@ export class CortexFileManager extends CortexElement {
           background: transparent;
           border: none;
           padding: 7px 14px;
-          font-size: 12.5px;
+          font-size: var(--text-xs, 12px);
           font-weight: 500;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           cursor: pointer;
           text-align: left;
           width: 100%;
@@ -546,20 +561,21 @@ export class CortexFileManager extends CortexElement {
         }
 
         .ctx-item:hover {
-          background: #f1f5f9;
+          background: var(--bg-hover, #37373d);
         }
 
         /* Grid View */
         .file-grid-container {
-          padding: 20px;
+          padding: 16px;
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+          gap: 14px;
         }
 
         .file-card {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          background: var(--bg-panel, #252526);
+          border: 1px solid var(--border-subtle, #333337);
+          border-radius: var(--radius-md, 6px);
           padding: 14px 10px;
           display: flex;
           flex-direction: column;
@@ -570,27 +586,30 @@ export class CortexFileManager extends CortexElement {
         }
 
         .file-card:hover {
-          border-color: #cbd5e1;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+          background: var(--bg-hover, #37373d);
+          border-color: var(--border-focus, #1473e6);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .file-card.selected {
-          border-color: #2563eb;
-          background: #eff6ff;
+          border-color: var(--accent-blue, #1473e6);
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.22));
+          box-shadow: 0 0 0 1px var(--accent-blue, #1473e6);
         }
 
         .card-name {
-          font-size: 12px;
+          font-size: var(--text-xs, 11.5px);
           font-weight: 500;
           text-align: center;
           word-break: break-all;
           max-height: 32px;
           overflow: hidden;
+          color: var(--text-primary, #e4e4e7);
         }
 
         .card-size {
-          font-size: 11px;
-          color: #64748b;
+          font-size: 10.5px;
+          color: var(--text-muted, #71717a);
         }
       </style>
 
@@ -598,21 +617,21 @@ export class CortexFileManager extends CortexElement {
       <div class="fm-topbar">
         <div class="action-group">
           <button class="fm-btn" id="btn-new-dir">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
             New directory
           </button>
           <button class="fm-btn" id="btn-upload-files">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
             Upload files
           </button>
         </div>
 
         <div class="action-group">
-          <button class="icon-btn" id="btn-toggle-view" title="Alternar Lista/Grade">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <button class="icon-btn ${this._viewMode === 'grid' ? 'active' : ''}" id="btn-toggle-view" title="Alternar Lista/Grade">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           </button>
           <button class="icon-btn" id="btn-refresh" title="Atualizar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
         </div>
       </div>
@@ -623,7 +642,7 @@ export class CortexFileManager extends CortexElement {
         <div class="fm-sidebar">
           <div class="tree-root-item">
             <span>&#8964;</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-warn, #eab308)" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span>Files</span>
           </div>
 
@@ -632,8 +651,8 @@ export class CortexFileManager extends CortexElement {
               const isActive = this._activeFolder.toLowerCase() === folder.name.toLowerCase();
               return `
                 <div class="tree-node ${isActive ? 'active' : ''}" data-folder="${folder.name}">
-                  ${folder.hasChildren ? `<span style="font-size:10px; color:#94a3b8;">&rsaquo;</span>` : `<span style="width:7px;"></span>`}
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${isActive ? '#2563eb' : '#64748b'}" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  ${folder.hasChildren ? `<span style="font-size:10px; color:var(--text-muted);">&rsaquo;</span>` : `<span style="width:7px;"></span>`}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${isActive ? 'var(--accent-text, #60a5fa)' : 'var(--text-secondary, #a1a1aa)'}" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                   <span>${folder.name}</span>
                 </div>
               `;
@@ -653,13 +672,15 @@ export class CortexFileManager extends CortexElement {
             </div>
           </div>
 
-          <!-- Área da Tabela/Grade com Menu de Contexto -->
+          <!-- Área da Tabela/Grade -->
           <div class="file-scroll-area">
             ${this._viewMode === 'list' ? this._renderFileList() : this._renderFileGrid()}
-            ${this._renderContextMenu()}
           </div>
         </div>
       </div>
+
+      <!-- Menu de Contexto Flutuante (Fixed) -->
+      ${this._renderContextMenu()}
     `;
 
     this._bindEvents();
@@ -683,12 +704,14 @@ export class CortexFileManager extends CortexElement {
     // Alternar Visualização (Lista / Grade)
     root.querySelector('#btn-toggle-view')?.addEventListener('click', () => {
       this._viewMode = this._viewMode === 'list' ? 'grid' : 'list';
+      this._contextMenu.visible = false;
       this.render();
     });
 
     // Subir Diretório
     root.querySelector('#btn-up-dir')?.addEventListener('click', () => {
       this._activeFolder = 'Files';
+      this._contextMenu.visible = false;
       this.render();
     });
 
@@ -717,7 +740,7 @@ export class CortexFileManager extends CortexElement {
       });
     }
 
-    // Seleção de Linhas de Arquivo e Abertura do Menu de Contexto
+    // Seleção de Linhas/Cards e Abertura do Menu de Contexto no local exato do cursor
     root.querySelectorAll('.file-row, .file-card').forEach(row => {
       const fileId = row.dataset.fileId;
 
@@ -725,20 +748,30 @@ export class CortexFileManager extends CortexElement {
         if (e.target.tagName === 'INPUT') return;
         this._selectedFileIds.clear();
         this._selectedFileIds.add(fileId);
+        // Fecha menu de contexto em clique normal
+        if (this._contextMenu.visible) {
+          this._contextMenu.visible = false;
+        }
         this.render();
       });
 
-      // Clique direito abre o Menu de Contexto na posição exata
+      // Clique direito abre o Menu de Contexto no ponto EXATO do clique (e.clientX, e.clientY)
       row.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        const rect = root.host.getBoundingClientRect();
+        e.stopPropagation();
+
+        const menuWidth = 170;
+        const menuHeight = 190;
+        const posX = Math.max(10, Math.min(e.clientX, window.innerWidth - menuWidth - 10));
+        const posY = Math.max(10, Math.min(e.clientY, window.innerHeight - menuHeight - 10));
+
         this._selectedFileIds.clear();
         this._selectedFileIds.add(fileId);
         this._contextMenu = {
           visible: true,
           targetFileId: fileId,
-          x: Math.min(e.clientX - rect.left, rect.width - 170),
-          y: Math.min(e.clientY - rect.top, rect.height - 200)
+          x: posX,
+          y: posY
         };
         this.render();
       });
@@ -757,9 +790,9 @@ export class CortexFileManager extends CortexElement {
       });
     });
 
-    // Fechar menu de contexto ao clicar fora
-    root.addEventListener('click', (e) => {
-      if (!e.target.closest('.context-menu-box') && !e.target.closest('.file-row')) {
+    // Fechar menu de contexto ao clicar em qualquer lugar fora dele
+    root.addEventListener('pointerdown', (e) => {
+      if (!e.composedPath().some(el => el.classList && el.classList.contains('context-menu-box'))) {
         if (this._contextMenu.visible) {
           this._contextMenu.visible = false;
           this.render();

@@ -7,6 +7,7 @@ import { CortexModal } from '../cortex-modal.js';
  * Processador de textos estilo Word / Google Docs com Ribbon de abas (File, Home, References...),
  * menu dropdown funcional "Insert Caption" (Figures, Tables, Equations), régua graduada,
  * folha A4 centralizada realista e exportação nativa para Word (.doc) e PDF.
+ * Totalmente compatível com todos os temas do CortexUI e 100% nativo.
  */
 export class CortexRichEdit extends CortexElement {
   constructor() {
@@ -16,6 +17,10 @@ export class CortexRichEdit extends CortexElement {
     this._figCount = 1;
     this._tblCount = 1;
     this._eqCount = 1;
+  }
+
+  onMount() {
+    this.watchState('theme', () => this.render());
   }
 
   // Insere legenda estilizada no documento ativo
@@ -125,9 +130,9 @@ export class CortexRichEdit extends CortexElement {
           flex-direction: column;
           width: 100%;
           height: 100%;
-          background: #f1f5f9;
-          color: #1e293b;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background: var(--bg-app, #18181b);
+          color: var(--text-primary, #e4e4e7);
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
           overflow: hidden;
           box-sizing: border-box;
         }
@@ -136,8 +141,8 @@ export class CortexRichEdit extends CortexElement {
         .ribbon-tabs-bar {
           display: flex;
           align-items: center;
-          background: #ffffff;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--bg-panel-header, #1f1f22);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           padding: 0 16px;
           height: 36px;
           user-select: none;
@@ -148,18 +153,18 @@ export class CortexRichEdit extends CortexElement {
           border: none;
           padding: 0 14px;
           height: 100%;
-          font-size: 13px;
+          font-size: var(--text-xs, 13px);
           font-weight: 500;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
           cursor: pointer;
           position: relative;
           transition: color 0.15s ease;
         }
 
-        .tab-btn:hover { color: #0f172a; }
+        .tab-btn:hover { color: var(--text-primary, #e4e4e7); }
 
         .tab-btn.active {
-          color: #2563eb;
+          color: var(--accent-text, #60a5fa);
           font-weight: 600;
         }
 
@@ -170,7 +175,7 @@ export class CortexRichEdit extends CortexElement {
           left: 10px;
           right: 10px;
           height: 2.5px;
-          background: #2563eb;
+          background: var(--accent-blue, #1473e6);
           border-radius: 2px 2px 0 0;
         }
 
@@ -178,10 +183,10 @@ export class CortexRichEdit extends CortexElement {
         .ribbon-toolbar {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           padding: 8px 18px;
-          background: #ffffff;
-          border-bottom: 1px solid #cbd5e1;
+          background: var(--bg-panel, #252526);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           user-select: none;
           position: relative;
           z-index: 50;
@@ -193,29 +198,30 @@ export class CortexRichEdit extends CortexElement {
           gap: 6px;
           background: transparent;
           border: 1px solid transparent;
-          border-radius: 4px;
+          border-radius: var(--radius-xs, 4px);
           padding: 6px 10px;
-          font-size: 12.5px;
+          font-size: var(--text-xs, 12.5px);
           font-weight: 500;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           cursor: pointer;
           transition: all 0.12s ease;
         }
 
         .tool-action-btn:hover {
-          background: #f1f5f9;
-          border-color: #cbd5e1;
+          background: var(--bg-hover, #37373d);
+          border-color: var(--border-subtle, #333337);
         }
 
         .tool-action-btn.active {
-          background: #e2e8f0;
-          border-color: #94a3b8;
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.22));
+          border-color: var(--accent-blue, #1473e6);
+          color: var(--accent-text, #60a5fa);
         }
 
         .tool-sep {
           width: 1px;
-          height: 24px;
-          background: #e2e8f0;
+          height: 22px;
+          background: var(--border-subtle, #333337);
         }
 
         /* Menu Dropdown Insert Caption (Imagem 3) */
@@ -228,10 +234,10 @@ export class CortexRichEdit extends CortexElement {
           position: absolute;
           top: calc(100% + 4px);
           left: 0;
-          background: #ffffff;
-          border: 1px solid #cbd5e1;
-          border-radius: 6px;
-          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);
+          background: var(--bg-elevated, #2a2a2d);
+          border: 1px solid var(--border-input, #3c3c42);
+          border-radius: var(--radius-md, 6px);
+          box-shadow: var(--shadow-dropdown, 0 10px 25px rgba(0,0,0,0.5));
           width: 190px;
           padding: 6px 0;
           z-index: 100;
@@ -244,8 +250,8 @@ export class CortexRichEdit extends CortexElement {
           align-items: center;
           gap: 10px;
           padding: 8px 14px;
-          font-size: 13px;
-          color: #334155;
+          font-size: var(--text-xs, 12.5px);
+          color: var(--text-primary, #e4e4e7);
           background: transparent;
           border: none;
           cursor: pointer;
@@ -256,8 +262,8 @@ export class CortexRichEdit extends CortexElement {
         }
 
         .dropdown-item:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--bg-hover, #37373d);
+          color: var(--text-primary, #ffffff);
         }
 
         .dropdown-icon {
@@ -268,8 +274,8 @@ export class CortexRichEdit extends CortexElement {
 
         /* Régua Horizontal Graduada */
         .ruler-container {
-          background: #ffffff;
-          border-bottom: 1px solid #cbd5e1;
+          background: var(--bg-panel, #252526);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           height: 22px;
           display: flex;
           align-items: center;
@@ -280,20 +286,20 @@ export class CortexRichEdit extends CortexElement {
         .ruler-corner {
           width: 40px;
           height: 100%;
-          border-right: 1px solid #cbd5e1;
+          border-right: 1px solid var(--border-subtle, #333337);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 10px;
-          color: #64748b;
+          color: var(--text-muted, #71717a);
         }
 
         .ruler-scale {
           flex: 1;
           height: 100%;
           position: relative;
-          background-image: repeating-linear-gradient(to right, #94a3b8 0, #94a3b8 1px, transparent 1px, transparent 20px),
-                            repeating-linear-gradient(to right, #cbd5e1 0, #cbd5e1 1px, transparent 1px, transparent 10px);
+          background-image: repeating-linear-gradient(to right, var(--ruler-tick, #6e6e77) 0, var(--ruler-tick, #6e6e77) 1px, transparent 1px, transparent 20px),
+                            repeating-linear-gradient(to right, var(--border-subtle, #333337) 0, var(--border-subtle, #333337) 1px, transparent 1px, transparent 10px);
           background-size: 100% 8px, 100% 4px;
           background-repeat: no-repeat;
           background-position: bottom;
@@ -303,8 +309,8 @@ export class CortexRichEdit extends CortexElement {
           position: absolute;
           top: 2px;
           font-size: 9px;
-          color: #64748b;
-          font-family: monospace;
+          color: var(--text-secondary, #a1a1aa);
+          font-family: var(--font-mono, monospace);
         }
 
         /* Workspace do Documento com Folha Centralizada */
@@ -314,7 +320,7 @@ export class CortexRichEdit extends CortexElement {
           display: flex;
           justify-content: center;
           padding: 32px 16px;
-          background: #e2e8f0;
+          background: var(--bg-workspace, #323234);
         }
 
         /* Folha A4 Centralizada */
@@ -323,7 +329,7 @@ export class CortexRichEdit extends CortexElement {
           max-width: 820px;
           min-height: 1050px;
           background: #ffffff;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
           border-radius: 2px;
           padding: 60px 75px;
           box-sizing: border-box;
@@ -336,7 +342,7 @@ export class CortexRichEdit extends CortexElement {
         }
 
         .paper-page:focus {
-          box-shadow: 0 10px 35px rgba(37,99,235,0.18);
+          box-shadow: 0 10px 35px rgba(20,115,230,0.3);
         }
 
         .doc-title {

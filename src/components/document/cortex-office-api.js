@@ -43,6 +43,10 @@ export class CortexOfficeApi extends CortexElement {
     };
   }
 
+  onMount() {
+    this.watchState('theme', () => this.render());
+  }
+
   _calculateTotals() {
     let subtotal = 0;
     let discountTotal = 0;

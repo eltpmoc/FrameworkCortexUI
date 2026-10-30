@@ -7,7 +7,7 @@ import { CortexModal } from '../cortex-modal.js';
  * Upload moderno com área Drag & Drop tracejada, botão "Select Files...", aviso de limite de 15 MB,
  * botão "Remove All", lista de arquivos enviados com status "Uploaded" e barra de progresso
  * animada em tempo real com botão de cancelamento individual.
- * 100% nativo, sem bibliotecas externas.
+ * Totalmente compatível com todos os temas do CortexUI e 100% nativo.
  */
 export class CortexFileUploader extends CortexElement {
   constructor() {
@@ -35,6 +35,10 @@ export class CortexFileUploader extends CortexElement {
     ];
 
     this._startSimulatedUploads();
+  }
+
+  onMount() {
+    this.watchState('theme', () => this.render());
   }
 
   // Simula o progresso realista de upload para itens ativos
@@ -156,9 +160,9 @@ export class CortexFileUploader extends CortexElement {
           flex-direction: column;
           width: 100%;
           height: 100%;
-          background: #ffffff;
-          color: #1e293b;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background: var(--bg-app, #18181b);
+          color: var(--text-primary, #e4e4e7);
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
           overflow: auto;
           box-sizing: border-box;
           padding: 24px;
@@ -175,65 +179,65 @@ export class CortexFileUploader extends CortexElement {
 
         /* Área Tracejada Drag & Drop */
         .dropzone-box {
-          border: 1.5px dashed #cbd5e1;
-          border-radius: 8px;
+          border: 1.5px dashed var(--border-input, #3c3c42);
+          border-radius: var(--radius-md, 8px);
           padding: 44px 20px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           gap: 12px;
-          background: #fafafa;
+          background: var(--bg-panel, #252526);
           transition: all 0.2s ease;
           user-select: none;
         }
 
         .dropzone-box.drag-over {
-          border-color: #2563eb;
-          background: #eff6ff;
+          border-color: var(--accent-blue, #1473e6);
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.15));
           transform: scale(1.008);
         }
 
         .upload-icon-symbol {
           width: 48px;
           height: 48px;
-          color: #94a3b8;
+          color: var(--text-secondary, #a1a1aa);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .dropzone-title {
-          font-size: 16px;
+          font-size: var(--text-base, 15px);
           font-weight: 600;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           margin: 0;
         }
 
         .dropzone-or {
           font-size: 13px;
-          color: #94a3b8;
+          color: var(--text-muted, #71717a);
           margin: -4px 0;
         }
 
         .btn-select-files {
-          background: #2563eb;
+          background: var(--accent-blue, #1473e6);
           color: #ffffff;
           border: none;
-          border-radius: 6px;
+          border-radius: var(--radius-sm, 4px);
           padding: 8px 20px;
-          font-size: 13.5px;
+          font-size: var(--text-xs, 13px);
           font-weight: 500;
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
         }
 
         .btn-select-files:hover {
-          background: #1d4ed8;
+          background: var(--accent-blue-hover, #0d66d0);
           transform: translateY(-1px);
         }
 
@@ -243,9 +247,9 @@ export class CortexFileUploader extends CortexElement {
           align-items: center;
           justify-content: space-between;
           padding-top: 4px;
-          font-size: 13px;
-          color: #64748b;
-          border-bottom: 1px solid #f1f5f9;
+          font-size: var(--text-xs, 12.5px);
+          color: var(--text-secondary, #a1a1aa);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           padding-bottom: 16px;
         }
 
@@ -253,21 +257,21 @@ export class CortexFileUploader extends CortexElement {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 6px;
+          background: var(--bg-panel, #252526);
+          border: 1px solid var(--border-subtle, #333337);
+          border-radius: var(--radius-sm, 4px);
           padding: 6px 14px;
-          font-size: 12.5px;
+          font-size: var(--text-xs, 12px);
           font-weight: 500;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
           cursor: pointer;
           transition: all 0.12s ease;
         }
 
         .btn-remove-all:hover {
-          background: #fef2f2;
-          color: #dc2626;
-          border-color: #fca5a5;
+          background: rgba(239, 68, 68, 0.14);
+          color: var(--status-error, #ef4444);
+          border-color: var(--status-error, #ef4444);
         }
 
         /* Lista de Arquivos */
@@ -278,19 +282,20 @@ export class CortexFileUploader extends CortexElement {
         }
 
         .upload-item {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 6px;
+          background: var(--bg-panel, #252526);
+          border: 1px solid var(--border-subtle, #333337);
+          border-radius: var(--radius-sm, 4px);
           padding: 12px 16px;
           display: flex;
           flex-direction: column;
           gap: 8px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-          transition: border-color 0.15s ease;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+          transition: border-color 0.15s ease, background 0.15s ease;
         }
 
         .upload-item:hover {
-          border-color: #cbd5e1;
+          border-color: var(--border-focus, #1473e6);
+          background: var(--bg-hover, #37373d);
         }
 
         .upload-item-header {
@@ -308,31 +313,31 @@ export class CortexFileUploader extends CortexElement {
         .btn-cancel-upload {
           background: transparent;
           border: none;
-          color: #64748b;
+          color: var(--text-muted, #71717a);
           font-size: 14px;
           cursor: pointer;
           padding: 2px 4px;
-          border-radius: 4px;
+          border-radius: var(--radius-xs, 2px);
           line-height: 1;
         }
         .btn-cancel-upload:hover {
-          color: #ef4444;
-          background: #f1f5f9;
+          color: var(--status-error, #ef4444);
+          background: var(--bg-hover, #37373d);
         }
 
         .file-name {
-          font-size: 13.5px;
+          font-size: var(--text-xs, 13px);
           font-weight: 600;
-          color: #1e293b;
+          color: var(--text-primary, #e4e4e7);
         }
 
         .file-status-sub {
-          font-size: 11.5px;
-          color: #94a3b8;
+          font-size: 11px;
+          color: var(--text-muted, #71717a);
           margin-top: 1px;
         }
         .file-status-sub.uploaded {
-          color: #107c41;
+          color: var(--status-ok, #22c55e);
           font-weight: 500;
         }
 
@@ -340,35 +345,35 @@ export class CortexFileUploader extends CortexElement {
           display: flex;
           align-items: center;
           gap: 12px;
-          font-size: 12px;
-          color: #64748b;
+          font-size: var(--text-xs, 12px);
+          color: var(--text-secondary, #a1a1aa);
         }
 
         .pct-text {
           font-weight: 600;
-          color: #1e293b;
-          font-family: monospace;
+          color: var(--text-primary, #e4e4e7);
+          font-family: var(--font-mono, monospace);
         }
 
-        /* Barra de Progresso Azul */
+        /* Barra de Progresso */
         .progress-track {
           width: 100%;
           height: 3.5px;
-          background: #e2e8f0;
+          background: var(--bg-input, #1b1b1d);
           border-radius: 2px;
           overflow: hidden;
         }
 
         .progress-fill {
           height: 100%;
-          background: #2563eb;
+          background: var(--accent-blue, #1473e6);
           border-radius: 2px;
           transition: width 0.3s ease;
         }
       </style>
 
       <div class="uploader-card">
-        <!-- Zona Tracejada de Drag and Drop (Imagem 5) -->
+        <!-- Zona Tracejada de Drag and Drop -->
         <div class="dropzone-box" id="dropzone">
           <div class="upload-icon-symbol">
             <!-- Ícone estilizado com barra no topo e seta para cima -->

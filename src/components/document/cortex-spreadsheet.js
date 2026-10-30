@@ -6,7 +6,7 @@ import { CortexModal } from '../cortex-modal.js';
  * Componente nativo de Document Management: Spreadsheet
  * Planilha completa estilo Excel / Office 365 com abas Ribbon, barra de fórmulas,
  * grid matricial interativo e dois gráficos vetoriais embutidos (Pie Chart e Horizontal Bar Chart)
- * 100% nativo, sem bibliotecas externas.
+ * Totalmente compatível com todos os temas do CortexUI e 100% nativo.
  */
 export class CortexSpreadsheet extends CortexElement {
   constructor() {
@@ -30,7 +30,7 @@ export class CortexSpreadsheet extends CortexElement {
     // Dados das células (coordenada -> { value, style })
     this._data = {
       // Título 1
-      'B2': { value: 'Portfolio Sectors', style: 'font-size: 16px; font-weight: bold; color: #1e293b;' },
+      'B2': { value: 'Portfolio Sectors', style: 'font-size: 16px; font-weight: bold; color: var(--text-primary);' },
       
       // Cabeçalho Setores
       'B4': { value: 'Sector', style: 'background: #2f5597; color: #ffffff; font-weight: bold; text-align: left;' },
@@ -51,7 +51,7 @@ export class CortexSpreadsheet extends CortexElement {
       'C10': { value: '$  15,423.00', style: 'text-align: right; font-family: monospace;' },
 
       // Título 2
-      'B13': { value: 'Top 10 of 12 Positions', style: 'font-size: 16px; font-weight: bold; color: #1e293b;' },
+      'B13': { value: 'Top 10 of 12 Positions', style: 'font-size: 16px; font-weight: bold; color: var(--text-primary);' },
 
       // Cabeçalho Posições
       'B15': { value: 'Company Symbol', style: 'background: #2f5597; color: #ffffff; font-weight: bold; text-align: left;' },
@@ -71,6 +71,10 @@ export class CortexSpreadsheet extends CortexElement {
       'B21': { value: 'F', style: 'text-align: left;' },
       'C21': { value: '$  1,797.75', style: 'text-align: right; font-family: monospace;' }
     };
+  }
+
+  onMount() {
+    this.watchState('theme', () => this.render());
   }
 
   // Gera o Gráfico de Pizza SVG nativo
@@ -101,7 +105,7 @@ export class CortexSpreadsheet extends CortexElement {
       currentAngle += sliceAngle;
 
       return `
-        <path d="${pathData}" fill="${sec.color}" stroke="#ffffff" stroke-width="1.5" class="chart-slice" data-sector="${sec.name}" data-val="${sec.val.toFixed(2)}">
+        <path d="${pathData}" fill="${sec.color}" stroke="var(--bg-panel, #252526)" stroke-width="1.5" class="chart-slice" data-sector="${sec.name}" data-val="${sec.val.toFixed(2)}">
           <title>${sec.name}: $${sec.val.toLocaleString()} (${((sec.val/total)*100).toFixed(1)}%)</title>
         </path>
       `;
@@ -155,7 +159,7 @@ export class CortexSpreadsheet extends CortexElement {
     const gridLines = [0, 1000, 2000, 3000].map(v => {
       const x = leftMargin + (v / maxVal) * (svgWidth - leftMargin - 20);
       return `
-        <line x1="${x}" y1="10" x2="${x}" y2="${svgHeight - 15}" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="${x}" y1="10" x2="${x}" y2="${svgHeight - 15}" stroke="var(--border-subtle, #333337)" stroke-width="1"/>
       `;
     }).join('');
 
@@ -163,8 +167,8 @@ export class CortexSpreadsheet extends CortexElement {
       const y = startY + idx * (barHeight + gap);
       const w = (b.val / maxVal) * (svgWidth - leftMargin - 20);
       return `
-        ${b.name ? `<text x="${leftMargin - 8}" y="${y + barHeight - 1}" font-size="9" fill="#64748b" text-anchor="end" font-weight="600">${b.name}</text>` : ''}
-        <rect x="${leftMargin}" y="${y}" width="${w}" height="${barHeight}" rx="1.5" fill="#4472c4" class="chart-bar">
+        ${b.name ? `<text x="${leftMargin - 8}" y="${y + barHeight - 1}" font-size="9" fill="var(--text-secondary, #a1a1aa)" text-anchor="end" font-weight="600">${b.name}</text>` : ''}
+        <rect x="${leftMargin}" y="${y}" width="${w}" height="${barHeight}" rx="1.5" fill="var(--accent-blue, #4472c4)" class="chart-bar">
           <title>${b.name || 'Pos'}: $${b.val}</title>
         </rect>
       `;
@@ -175,8 +179,8 @@ export class CortexSpreadsheet extends CortexElement {
         <div class="bar-chart-title">Total</div>
         <svg viewBox="0 0 ${svgWidth} ${svgHeight}" width="100%" height="150">
           ${gridLines}
-          <line x1="${leftMargin}" y1="10" x2="${leftMargin}" y2="${svgHeight - 15}" stroke="#cbd5e1" stroke-width="1.5"/>
-          <line x1="${leftMargin}" y1="${svgHeight - 15}" x2="${svgWidth - 20}" y2="${svgHeight - 15}" stroke="#cbd5e1" stroke-width="1.5"/>
+          <line x1="${leftMargin}" y1="10" x2="${leftMargin}" y2="${svgHeight - 15}" stroke="var(--border-input, #3c3c42)" stroke-width="1.5"/>
+          <line x1="${leftMargin}" y1="${svgHeight - 15}" x2="${svgWidth - 20}" y2="${svgHeight - 15}" stroke="var(--border-input, #3c3c42)" stroke-width="1.5"/>
           ${barElements}
         </svg>
       </div>
@@ -213,9 +217,9 @@ export class CortexSpreadsheet extends CortexElement {
           flex-direction: column;
           width: 100%;
           height: 100%;
-          background: #ffffff;
-          color: #1e293b;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background: var(--bg-app, #18181b);
+          color: var(--text-primary, #e4e4e7);
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
           overflow: hidden;
           box-sizing: border-box;
         }
@@ -224,8 +228,8 @@ export class CortexSpreadsheet extends CortexElement {
         .ribbon-tabs-bar {
           display: flex;
           align-items: center;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--bg-panel-header, #1f1f22);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           padding: 0 12px;
           height: 34px;
           user-select: none;
@@ -236,20 +240,20 @@ export class CortexSpreadsheet extends CortexElement {
           border: none;
           padding: 0 14px;
           height: 100%;
-          font-size: 13px;
+          font-size: var(--text-xs, 12.5px);
           font-weight: 500;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
           cursor: pointer;
           position: relative;
           transition: color 0.15s ease;
         }
 
         .tab-btn:hover {
-          color: #0f172a;
+          color: var(--text-primary, #e4e4e7);
         }
 
         .tab-btn.active {
-          color: #2563eb;
+          color: var(--accent-text, #60a5fa);
           font-weight: 600;
         }
 
@@ -260,7 +264,7 @@ export class CortexSpreadsheet extends CortexElement {
           left: 8px;
           right: 8px;
           height: 2.5px;
-          background: #2563eb;
+          background: var(--accent-blue, #1473e6);
           border-radius: 2px 2px 0 0;
         }
 
@@ -270,8 +274,8 @@ export class CortexSpreadsheet extends CortexElement {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          background: #ffffff;
-          border-bottom: 1px solid #cbd5e1;
+          background: var(--bg-panel, #252526);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           flex-wrap: wrap;
           user-select: none;
         }
@@ -279,12 +283,12 @@ export class CortexSpreadsheet extends CortexElement {
         .tool-btn {
           background: transparent;
           border: 1px solid transparent;
-          border-radius: 3px;
+          border-radius: var(--radius-xs, 3px);
           padding: 4px 6px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           cursor: pointer;
           font-size: 13px;
           min-width: 26px;
@@ -294,31 +298,32 @@ export class CortexSpreadsheet extends CortexElement {
         }
 
         .tool-btn:hover {
-          background: #f1f5f9;
-          border-color: #cbd5e1;
+          background: var(--bg-hover, #37373d);
+          border-color: var(--border-subtle, #333337);
         }
 
         .tool-btn.active {
-          background: #e2e8f0;
-          border-color: #94a3b8;
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.22));
+          border-color: var(--accent-blue, #1473e6);
+          color: var(--accent-text, #60a5fa);
           font-weight: bold;
         }
 
         .tool-divider {
           width: 1px;
           height: 18px;
-          background: #e2e8f0;
+          background: var(--border-subtle, #333337);
           margin: 0 4px;
         }
 
         .select-font {
           height: 26px;
-          border: 1px solid #cbd5e1;
-          border-radius: 3px;
+          border: 1px solid var(--border-input, #3c3c42);
+          border-radius: var(--radius-xs, 3px);
           padding: 0 6px;
-          font-size: 12px;
-          color: #1e293b;
-          background: #fff;
+          font-size: var(--text-xs, 12px);
+          color: var(--text-primary, #e4e4e7);
+          background: var(--bg-input, #1b1b1d);
           outline: none;
         }
 
@@ -326,8 +331,8 @@ export class CortexSpreadsheet extends CortexElement {
         .formula-bar-container {
           display: flex;
           align-items: center;
-          background: #ffffff;
-          border-bottom: 1px solid #cbd5e1;
+          background: var(--bg-panel, #252526);
+          border-bottom: 1px solid var(--border-subtle, #333337);
           padding: 4px 10px;
           gap: 8px;
           height: 30px;
@@ -337,19 +342,19 @@ export class CortexSpreadsheet extends CortexElement {
         .name-box {
           width: 58px;
           height: 22px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid var(--border-input, #3c3c42);
           border-radius: 2px;
-          background: #f8fafc;
+          background: var(--bg-input, #1b1b1d);
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 600;
-          font-family: monospace;
-          color: #1e293b;
+          font-family: var(--font-mono, monospace);
+          color: var(--text-primary, #e4e4e7);
         }
 
         .fx-icon {
-          color: #64748b;
+          color: var(--text-secondary, #a1a1aa);
           font-style: italic;
           font-weight: 800;
           font-family: serif;
@@ -361,8 +366,8 @@ export class CortexSpreadsheet extends CortexElement {
         }
 
         .fx-icon:hover {
-          background: #e2e8f0;
-          color: #2563eb;
+          background: var(--bg-hover, #37373d);
+          color: var(--accent-text, #60a5fa);
         }
 
         .formula-input {
@@ -371,7 +376,7 @@ export class CortexSpreadsheet extends CortexElement {
           border: none;
           outline: none;
           font-size: 13px;
-          color: #1e293b;
+          color: var(--text-primary, #e4e4e7);
           padding: 0 4px;
           background: transparent;
         }
@@ -382,7 +387,7 @@ export class CortexSpreadsheet extends CortexElement {
           display: flex;
           position: relative;
           overflow: auto;
-          background: #ffffff;
+          background: var(--bg-app, #18181b);
         }
 
         .sheet-table {
@@ -394,8 +399,8 @@ export class CortexSpreadsheet extends CortexElement {
         .corner-cell {
           width: 38px;
           min-width: 38px;
-          background: #f8fafc;
-          border: 1px solid #cbd5e1;
+          background: var(--bg-panel-header, #1f1f22);
+          border: 1px solid var(--border-subtle, #333337);
           position: sticky;
           top: 0;
           left: 0;
@@ -403,13 +408,13 @@ export class CortexSpreadsheet extends CortexElement {
         }
 
         .col-header {
-          background: #f8fafc;
-          color: #475569;
+          background: var(--bg-panel-header, #1f1f22);
+          color: var(--text-secondary, #a1a1aa);
           font-size: 11.5px;
           font-weight: 600;
           text-align: center;
           height: 24px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid var(--border-subtle, #333337);
           position: sticky;
           top: 0;
           z-index: 10;
@@ -417,24 +422,24 @@ export class CortexSpreadsheet extends CortexElement {
         }
 
         .row-header {
-          background: #f8fafc;
-          color: #475569;
+          background: var(--bg-panel-header, #1f1f22);
+          color: var(--text-secondary, #a1a1aa);
           font-size: 11px;
           font-weight: 600;
           text-align: center;
           width: 38px;
           min-width: 38px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid var(--border-subtle, #333337);
           position: sticky;
           left: 0;
           z-index: 10;
         }
 
         .grid-cell {
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--border-subtle, #333337);
           padding: 3px 6px;
           font-size: 12.5px;
-          color: #1e293b;
+          color: var(--text-primary, #e4e4e7);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -445,10 +450,10 @@ export class CortexSpreadsheet extends CortexElement {
         }
 
         .grid-cell.selected {
-          outline: 2px solid #2563eb;
+          outline: 2px solid var(--accent-blue, #1473e6);
           outline-offset: -1px;
           z-index: 2;
-          background: rgba(37, 99, 235, 0.06);
+          background: var(--accent-blue-alpha, rgba(20, 115, 230, 0.16));
         }
 
         .grid-cell.selected::after {
@@ -458,8 +463,8 @@ export class CortexSpreadsheet extends CortexElement {
           right: -2px;
           width: 5px;
           height: 5px;
-          background: #2563eb;
-          border: 1px solid #fff;
+          background: var(--accent-blue, #1473e6);
+          border: 1px solid var(--bg-app, #18181b);
         }
 
         .cell-editor {
@@ -468,11 +473,12 @@ export class CortexSpreadsheet extends CortexElement {
           left: 0;
           width: 100%;
           height: 100%;
-          border: 2px solid #2563eb;
+          border: 2px solid var(--accent-blue, #1473e6);
           padding: 2px 4px;
           font-size: 12.5px;
           outline: none;
-          background: #fff;
+          background: var(--bg-input, #1b1b1d);
+          color: var(--text-primary, #e4e4e7);
           z-index: 5;
           box-sizing: border-box;
         }
@@ -480,18 +486,19 @@ export class CortexSpreadsheet extends CortexElement {
         /* Gráficos Embutidos Flutuantes */
         .embedded-chart {
           position: absolute;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 6px;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+          background: var(--bg-panel, #252526);
+          border: 1px solid var(--border-subtle, #333337);
+          border-radius: var(--radius-md, 6px);
+          box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0,0,0,0.3));
           z-index: 8;
           padding: 10px;
           box-sizing: border-box;
-          transition: box-shadow 0.15s ease;
+          transition: box-shadow 0.15s ease, border-color 0.15s ease;
         }
 
         .embedded-chart:hover {
-          box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+          box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+          border-color: var(--border-focus, #1473e6);
         }
 
         .pie-chart-widget {
@@ -513,7 +520,7 @@ export class CortexSpreadsheet extends CortexElement {
           flex-direction: column;
           gap: 6px;
           font-size: 11px;
-          color: #475569;
+          color: var(--text-secondary, #a1a1aa);
         }
 
         .legend-item {
@@ -539,7 +546,7 @@ export class CortexSpreadsheet extends CortexElement {
           font-size: 12px;
           font-weight: 700;
           text-align: center;
-          color: #334155;
+          color: var(--text-primary, #e4e4e7);
           margin-bottom: 4px;
         }
 
@@ -615,7 +622,7 @@ export class CortexSpreadsheet extends CortexElement {
       <!-- Barra de Fórmulas -->
       <div class="formula-bar-container">
         <div class="name-box" id="cell-address">${this._activeCell}</div>
-        <div class="fx-icon">fx</div>
+        <div class="fx-icon" title="Assistente de Funções Matemáticas">fx</div>
         <input class="formula-input" id="formula-input" value="${this._data[this._activeCell]?.value || ''}" placeholder="Digite um valor ou fórmula..." />
       </div>
 

@@ -6,6 +6,7 @@ import {
   CortexLine,
   CortexText,
   CortexPath,
+  CortexImage,
   createNodeFromJSON
 } from './nodes/index.js';
 
@@ -234,6 +235,7 @@ export class CanvasEngine {
   addNode(node, selectAfterAdd = true, recordHistory = true) {
     const activePage = Number(AppState.get('currentPage')) || 1;
     node.page = Number(node.page) || activePage;
+    node._engine = this;
 
     const maxZ = this.nodes.reduce((max, n) => Math.max(max, n.zIndex || 0), 0);
     node.zIndex = maxZ + 1;
@@ -344,6 +346,36 @@ export class CanvasEngine {
       strokeWidth: 2
     });
     return this.addNode(rect, true, true);
+  }
+
+  /**
+   * Importa e insere um nó de Imagem (JPG, PNG, WEBP, SVG) na página ativa.
+   * @param {string} src - Data URL em Base64 ou URL da imagem
+   * @param {object} options - Opções de posicionamento, dimensões e estilo
+   */
+  addImageNode(src, options = {}) {
+    const page = this.getPageDimensionsPx();
+    const activePage = Number(AppState.get('currentPage')) || 1;
+    const defaultW = options.width || 320;
+    const defaultH = options.height || 220;
+    const defaultX = options.x !== undefined ? options.x : Math.round((page.width - defaultW) / 2);
+    const defaultY = options.y !== undefined ? options.y : Math.round((page.height - defaultH) / 2);
+
+    const imgNode = new CortexImage({
+      page: activePage,
+      src,
+      name: options.name || `Imagem ${Date.now().toString().slice(-4)}`,
+      x: defaultX,
+      y: defaultY,
+      width: defaultW,
+      height: defaultH,
+      stroke: options.stroke || 'none',
+      strokeWidth: options.strokeWidth || 0,
+      cornerRadius: options.cornerRadius || 0,
+      ...options
+    });
+    imgNode._engine = this;
+    return this.addNode(imgNode, true, true);
   }
 
   /**

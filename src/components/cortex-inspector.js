@@ -230,14 +230,20 @@ export class CortexInspector extends CortexElement {
 
         <!-- Preenchimento (Fill) e Contorno (Stroke) com <cortex-color-picker> Moderno -->
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <cortex-color-picker
-            id="picker-fill"
-            label="${t('inspector.fill')}:"
-            value="${node.fill || '#10b981'}"
-          ></cortex-color-picker>
+          ${
+            node.type !== 'image'
+              ? `
+              <cortex-color-picker
+                id="picker-fill"
+                label="${t('inspector.fill')}:"
+                value="${node.fill || '#10b981'}"
+              ></cortex-color-picker>
+            `
+              : ''
+          }
           <cortex-color-picker
             id="picker-stroke"
-            label="${t('inspector.stroke')}:"
+            label="${node.type === 'image' ? 'Moldura / Borda:' : `${t('inspector.stroke')}:`}"
             value="${node.stroke || '#18181b'}"
           ></cortex-color-picker>
         </div>
@@ -313,6 +319,58 @@ export class CortexInspector extends CortexElement {
               <input type="text" data-bind-prop="text" value="${node.text || ''}" />
             </label>
             <cortex-font-picker id="picker-font"></cortex-font-picker>`
+            : ''
+        }
+
+        ${
+          node.type === 'image'
+            ? `
+            <div class="section-title" style="margin-top: 6px; color: var(--accent-text);">Propriedades da Imagem</div>
+            <div style="text-align: center; margin: 6px 0; background: var(--bg-input); padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);">
+              <img src="${node.src}" alt="${node.name || 'Imagem'}" style="max-height: 80px; max-width: 100%; object-fit: contain; border-radius: 3px;" />
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 3px;">
+                ${node.naturalWidth || '?'} × ${node.naturalHeight || '?'} px
+              </div>
+            </div>
+
+            <button class="btn-secondary" id="btn-replace-image" style="width: 100%; margin-bottom: 6px;">
+              🔄 Substituir Imagem...
+            </button>
+
+            <!-- Cantos Arredondados da Imagem -->
+            <div class="slider-group">
+              <div class="row-between">
+                <span class="prefix">Cantos Arredondados</span>
+                <input
+                  type="number"
+                  class="mini-num"
+                  data-bind-prop="cornerRadius"
+                  min="0"
+                  max="200"
+                  value="${node.cornerRadius ?? 0}"
+                />
+              </div>
+              <input
+                type="range"
+                class="touch-slider"
+                data-bind-prop="cornerRadius"
+                min="0"
+                max="100"
+                step="1"
+                value="${node.cornerRadius ?? 0}"
+              />
+            </div>
+
+            <!-- Espelhamento Horizontal e Vertical -->
+            <div class="grid-2" style="margin-top: 4px;">
+              <button class="btn-secondary ${node.flipX ? 'active' : ''}" id="btn-flip-h" title="Espelhar Horizontalmente">
+                ⇄ Espelhar H
+              </button>
+              <button class="btn-secondary ${node.flipY ? 'active' : ''}" id="btn-flip-v" title="Espelhar Verticalmente">
+                ⇅ Espelhar V
+              </button>
+            </div>
+            `
             : ''
         }
 
@@ -480,7 +538,10 @@ export class CortexInspector extends CortexElement {
       <div class="section-group" style="border-bottom: none;">
         <div class="section-title">${t('inspector.quickActions')}</div>
         <button class="btn-primary" id="btn-add-rect">${t('inspector.addRect')}</button>
-        <div class="grid-2">
+        <button class="btn-secondary" id="btn-import-image" style="width: 100%; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Importar imagem JPG, PNG, WEBP ou SVG">
+          <span>🖼️</span> Importar Imagem (JPG, PNG)
+        </button>
+        <div class="grid-2" style="margin-top: 4px;">
           <button class="btn-secondary" id="btn-export-json">&#128190; ${t('inspector.exportJson')}</button>
           <button class="btn-secondary" id="btn-import-json">&#128193; ${t('inspector.importJson')}</button>
         </div>
@@ -1241,6 +1302,10 @@ export class CortexInspector extends CortexElement {
       this.emit('cortex-quick-action', { action: 'add-rect' });
     });
 
+    this.shadowRoot.getElementById('btn-import-image')?.addEventListener('click', () => {
+      this.emit('cortex-quick-action', { action: 'import-image' });
+    });
+
     this.shadowRoot.getElementById('btn-export-json')?.addEventListener('click', () => {
       this.emit('cortex-menu-action', { action: 'save-json' });
     });
@@ -1248,6 +1313,48 @@ export class CortexInspector extends CortexElement {
     this.shadowRoot.getElementById('btn-import-json')?.addEventListener('click', () => {
       this.emit('cortex-menu-action', { action: 'open-json' });
     });
+
+    // Ações Específicas de Imagem Selecionada
+    if (selectedNode && selectedNode.type === 'image') {
+      this.shadowRoot.getElementById('btn-replace-image')?.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png,image/jpeg,image/jpg,image/webp,image/svg+xml';
+        input.addEventListener('change', () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            const img = new Image();
+            img.onload = () => {
+              this.emit('cortex-update-property', { id: selectedNode.id, prop: 'src', value: dataUrl, commitHistory: true });
+              this.emit('cortex-update-property', { id: selectedNode.id, prop: 'naturalWidth', value: img.naturalWidth });
+              this.emit('cortex-update-property', { id: selectedNode.id, prop: 'naturalHeight', value: img.naturalHeight });
+              if (typeof selectedNode.setSource === 'function') {
+                selectedNode.setSource(dataUrl, file.name);
+              }
+              this.render();
+            };
+            img.src = dataUrl;
+          };
+          reader.readAsDataURL(file);
+        });
+        input.click();
+      });
+
+      this.shadowRoot.getElementById('btn-flip-h')?.addEventListener('click', () => {
+        const next = !selectedNode.flipX;
+        this.emit('cortex-update-property', { id: selectedNode.id, prop: 'flipX', value: next, commitHistory: true });
+        this.render();
+      });
+
+      this.shadowRoot.getElementById('btn-flip-v')?.addEventListener('click', () => {
+        const next = !selectedNode.flipY;
+        this.emit('cortex-update-property', { id: selectedNode.id, prop: 'flipY', value: next, commitHistory: true });
+        this.render();
+      });
+    }
   }
 }
 

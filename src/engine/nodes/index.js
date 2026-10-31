@@ -10,6 +10,7 @@ import { CortexStar } from './CortexStar.js';
 import { CortexDiamond } from './CortexDiamond.js';
 import { CortexArrow } from './CortexArrow.js';
 import { CortexCallout } from './CortexCallout.js';
+import { CortexImage } from './CortexImage.js';
 
 export {
   CortexNode,
@@ -22,7 +23,8 @@ export {
   CortexStar,
   CortexDiamond,
   CortexArrow,
-  CortexCallout
+  CortexCallout,
+  CortexImage
 };
 
 /**
@@ -54,6 +56,10 @@ export function createNodeFromJSON(data = {}) {
     case 'path':
     case 'pencil':
       return new CortexPath(data);
+    case 'image':
+    case 'img':
+    case 'picture':
+      return new CortexImage(data);
     default:
       return new CortexRect(data);
   }

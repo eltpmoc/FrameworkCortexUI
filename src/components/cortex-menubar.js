@@ -11,6 +11,7 @@ function getLocalizedMenus() {
       items: [
         { action: 'new-doc', label: t('menu.newDoc'), shortcut: 'Ctrl+N' },
         { action: 'open-json', label: t('menu.openJson'), shortcut: 'Ctrl+O' },
+        { action: 'import-image', label: 'Importar Imagem (JPG, PNG)...', shortcut: 'Ctrl+D' },
         { type: 'divider' },
         { action: 'save-json', label: t('menu.saveJson'), shortcut: 'Ctrl+S' },
         { action: 'export-image', label: t('menu.exportImage'), shortcut: 'Ctrl+E' },
@@ -57,6 +58,7 @@ function getLocalizedMenus() {
       items: [
         { action: 'add-rect', label: t('menu.insertRect'), shortcut: 'M' },
         { action: 'add-line', label: t('menu.insertLine'), shortcut: 'L' },
+        { action: 'import-image', label: 'Inserir Imagem (JPG, PNG)...', shortcut: 'Ctrl+D' },
         { type: 'divider' },
         { action: 'boolean-union', label: 'União / Soldar Formas (Weld)', shortcut: 'Ctrl+Shift+U' },
         { action: 'boolean-intersect', label: 'Interseção de Formas (Intersect)', shortcut: 'Ctrl+Shift+I' },

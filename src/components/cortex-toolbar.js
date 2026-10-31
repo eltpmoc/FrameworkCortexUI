@@ -82,7 +82,12 @@ export const DEFAULT_DESIGN_TOOLS = [
   {
     id: 'callout',
     label: 'Callout / Speech Bubble (C)',
-    svg: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`
+    svg: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`
+  },
+  {
+    id: 'image',
+    label: 'Image Tool / Inserir Imagem (K)',
+    svg: `<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>`
   },
   { type: 'divider' },
 
@@ -394,6 +399,9 @@ export class CortexToolbar extends CortexElement {
         const selectedTool = btn.dataset.tool;
         AppState.setState({ activeTool: selectedTool });
         this.emit('cortex-tool-change', { tool: selectedTool });
+        if (selectedTool === 'image') {
+          this.emit('cortex-menu-action', { action: 'import-image' });
+        }
       });
     });
 

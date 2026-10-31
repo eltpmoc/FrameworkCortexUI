@@ -62,6 +62,8 @@ window.addEventListener('cortex-quick-action', (e) => {
       `Retângulo adicionado na Página ${AppState.get('currentPage')}`,
       'success'
     );
+  } else if (action === 'import-image') {
+    workspaceEl.openImageImportDialog();
   }
 });
 
@@ -470,6 +472,11 @@ window.addEventListener('cortex-menu-action', async (e) => {
       a.download = 'cortex-stage.png';
       a.click();
       CortexModal.toast('Imagem PNG exportada!', 'success');
+      break;
+    }
+
+    case 'import-image': {
+      workspaceEl.openImageImportDialog();
       break;
     }
 

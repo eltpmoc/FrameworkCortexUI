@@ -7,6 +7,7 @@ const DEFAULT_COMMANDS = [
   { id: 'save-json', category: 'File', label: 'Export Scene to JSON', shortcut: 'Ctrl+S' },
   { id: 'open-json', category: 'File', label: 'Import Scene from JSON...', shortcut: 'Ctrl+O' },
   { id: 'export-image', category: 'File', label: 'Export Stage as PNG Image', shortcut: 'Ctrl+E' },
+  { id: 'import-image', category: 'Insert', label: 'Import JPG, PNG or WebP Image to Stage...', shortcut: 'Ctrl+D' },
   { id: 'add-rect', category: 'Insert', label: 'Insert Default Rectangle on Active Page', shortcut: 'M' },
   { id: 'tool-text', category: 'Insert', label: 'Activate Text Frame Tool', shortcut: 'T' },
   { id: 'tool-pen', category: 'Insert', label: 'Activate Vector Pen / Path Tool', shortcut: 'P' },

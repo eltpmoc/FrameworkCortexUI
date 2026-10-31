@@ -155,6 +155,7 @@ export class CortexWorkspace extends CortexElement {
       else if (act.startsWith('distribute-')) this._executeSelectionToolbarAction(act);
       else if (act === 'duplicate') this._executeSelectionToolbarAction('duplicate');
       else if (act === 'delete') this._executeSelectionToolbarAction('delete');
+      else if (act === 'import-image') this.openImageImportDialog();
     };
     window.addEventListener('cortex-inspector-action', this._onInspectorAction);
     window.addEventListener('cortex-menu-action', this._onInspectorAction);
@@ -174,6 +175,9 @@ export class CortexWorkspace extends CortexElement {
     if (this._onInspectorAction) {
       window.removeEventListener('cortex-inspector-action', this._onInspectorAction);
       window.removeEventListener('cortex-menu-action', this._onInspectorAction);
+    }
+    if (this._onPaste) {
+      window.removeEventListener('paste', this._onPaste);
     }
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
@@ -211,7 +215,14 @@ export class CortexWorkspace extends CortexElement {
       this.engine.selectNodes(pageNodes);
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
       e.preventDefault();
-      this._duplicateSelection();
+      if ((this.engine.selectedNodes && this.engine.selectedNodes.length > 0) || this.engine.selectedNode) {
+        this._duplicateSelection();
+      } else {
+        this.openImageImportDialog();
+      }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i' && !e.shiftKey) {
+      e.preventDefault();
+      this.openImageImportDialog();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       if (e.shiftKey) {
@@ -446,6 +457,12 @@ export class CortexWorkspace extends CortexElement {
           this.engine.removeNode(hitNode.id);
           CortexModal.toast('Elemento apagado', 'info', 1200);
         }
+        return;
+      }
+
+      // Ferramenta Imagem (Image)
+      if (tool === 'image') {
+        this.openImageImportDialog(worldPt);
         return;
       }
 
@@ -969,6 +986,113 @@ export class CortexWorkspace extends CortexElement {
     canvas.addEventListener('wheel', () => {
       this._updateFloatingToolbar();
     }, { passive: true });
+
+    // Suporte a Arrastar e Soltar (Drag & Drop) de imagens JPG, PNG, WEBP e SVG direto no palco
+    const stageWrap = this.shadowRoot.getElementById('stage-wrap');
+    if (stageWrap) {
+      stageWrap.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      });
+      stageWrap.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+          const pt = this._getCanvasRelativeCoords(e, canvas);
+          const worldPt = this.engine.screenToWorld(pt.x, pt.y);
+          this.importImageFile(file, worldPt);
+        }
+      });
+    }
+
+    // Suporte a Colar imagem da área de transferência (Paste / Ctrl+V)
+    this._onPaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            this.importImageFile(file);
+            e.preventDefault();
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', this._onPaste);
+  }
+
+  /**
+   * Abre o diálogo de seleção de arquivo de imagem do sistema operacional (JPG, PNG, WEBP, SVG)
+   * @param {object|null} worldCoords - Coordenadas opcionais no palco para inserção
+   */
+  openImageImportDialog(worldCoords = null) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpeg,image/jpg,image/webp,image/svg+xml';
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      this.importImageFile(file, worldCoords);
+    });
+    input.click();
+  }
+
+  /**
+   * Lê um arquivo de imagem (JPG, PNG, WEBP, SVG) e adiciona um nó CortexImage na página ativa
+   * @param {File} file - Arquivo de imagem selecionado
+   * @param {object|null} worldCoords - Coordenadas opcionais no mundo
+   */
+  importImageFile(file, worldCoords = null) {
+    if (!file || !this.engine) return;
+    if (!file.type.startsWith('image/')) {
+      CortexModal.toast('Por favor, selecione um arquivo de imagem válido (JPG, PNG, WEBP ou SVG).', 'warning');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth || 300;
+        let h = img.naturalHeight || 200;
+        const maxDim = 450;
+        if (w > maxDim || h > maxDim) {
+          const ratio = w / h;
+          if (w > h) {
+            w = maxDim;
+            h = Math.round(maxDim / ratio);
+          } else {
+            h = maxDim;
+            w = Math.round(maxDim * ratio);
+          }
+        }
+
+        const page = this.engine.getPageDimensionsPx();
+        const posX = worldCoords ? Math.round(worldCoords.x - w / 2) : Math.round((page.width - w) / 2);
+        const posY = worldCoords ? Math.round(worldCoords.y - h / 2) : Math.round((page.height - h) / 2);
+
+        this.engine.addImageNode(dataUrl, {
+          name: file.name ? file.name.replace(/\.[^/.]+$/, '') : `Imagem ${Date.now().toString().slice(-4)}`,
+          x: posX,
+          y: posY,
+          width: w,
+          height: h,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight
+        });
+
+        CortexModal.toast(`Imagem "${file.name}" importada com sucesso!`, 'success');
+        AppState.setState({ activeTool: 'select' });
+      };
+      img.onerror = () => {
+        CortexModal.toast('Erro ao processar imagem.', 'error');
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
   }
 
   /**

@@ -8,19 +8,22 @@ import { CortexModal } from './cortex-modal.js';
  * quanto com abertura direta via arquivo local (file://).
  */
 function getPersonPhoto(index) {
+  const idx = Math.max(1, Math.min(12, parseInt(index, 10) || 1));
   if (typeof window !== 'undefined' && window.location) {
     if (window.location.protocol === 'file:') {
       const p = (window.location.pathname || '').replace(/\\/g, '/');
       if (p.includes('/docs/')) {
-        return `../img/docs/pessoa${index}.jpg`;
+        return `../img/docs/pessoa${idx}.jpg`;
       }
-      return `./img/docs/pessoa${index}.jpg`;
+      return `./img/docs/pessoa${idx}.jpg`;
     }
-    // Em servidor HTTP/HTTPS local ou produção, a rota absoluta /img/docs/pessoaX.jpg
-    // carrega perfeitamente a partir de qualquer nível de rota.
-    return `/img/docs/pessoa${index}.jpg`;
+    const loc = (window.location.pathname || '').replace(/\\/g, '/');
+    if (loc.includes('/cortex-ui/')) {
+      return `/cortex-ui/img/docs/pessoa${idx}.jpg`;
+    }
+    return `/img/docs/pessoa${idx}.jpg`;
   }
-  return `./img/docs/pessoa${index}.jpg`;
+  return `./img/docs/pessoa${idx}.jpg`;
 }
 
 /**
@@ -636,7 +639,7 @@ export class CortexCardView extends CortexElement {
               </div>
 
               <div class="pcard-photo">
-                <img src="${person.avatar}" alt="${person.fullName}" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='img/docs/pessoa${person.photoIndex || 1}.jpg';}" />
+                <img src="${person.avatar}" alt="${person.fullName}" loading="lazy" onerror="this.onerror=null; this.src='${buildExecutivePortraitSVG({ female: ((person.photoIndex || 1) % 2 === 1) })}';" />
               </div>
 
               <div class="pcard-fields">
@@ -2657,7 +2660,7 @@ export class CortexFormView extends CortexElement {
             .map(
               (m) => `
             <div class="msg-row ${m.outgoing ? 'outgoing' : 'incoming'}">
-              ${!m.outgoing ? `<img class="chat-avatar" src="${this._record.avatar}" alt="${m.sender}" onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='img/docs/pessoa${this._record.photoIndex || 1}.jpg';}" />` : ''}
+              ${!m.outgoing ? `<img class="chat-avatar" src="${this._record.avatar}" alt="${m.sender}" onerror="this.onerror=null; this.src='${buildExecutivePortraitSVG({ female: ((this._record.photoIndex || 1) % 2 === 1) })}';" />` : ''}
               <div class="msg-col">
                 <div class="msg-meta">${m.outgoing ? '' : `<strong>${m.sender}</strong> `}<span>${m.time}</span></div>
                 <div class="msg-bubble">${m.text.replace(/\n/g, '<br/>')}</div>
@@ -2998,7 +3001,7 @@ export class CortexFormView extends CortexElement {
 
           <div class="fv-top-grid">
             <div class="fv-photo">
-              <img src="${this._record.avatar}" alt="${this._record.fullName}" onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='img/docs/pessoa${this._record.photoIndex || 1}.jpg';}" />
+              <img src="${this._record.avatar}" alt="${this._record.fullName}" onerror="this.onerror=null; this.src='${buildExecutivePortraitSVG({ female: ((this._record.photoIndex || 1) % 2 === 1) })}';" />
             </div>
             <div class="fv-field-stack">
               <div class="f-group">

@@ -6,7 +6,7 @@ import { CortexModal } from './cortex-modal.js';
  * Retorna o caminho da foto IA da pessoa (img/docs/pessoa1.jpg ... pessoa12.jpg)
  */
 function getPersonPhoto(index) {
-  const idx = Math.max(1, Math.min(12, index || 1));
+  const idx = Math.max(1, Math.min(12, parseInt(index, 10) || 1));
   if (typeof window !== 'undefined' && window.location) {
     if (window.location.protocol === 'file:') {
       const p = (window.location.pathname || '').replace(/\\/g, '/');
@@ -14,6 +14,10 @@ function getPersonPhoto(index) {
         return `../img/docs/pessoa${idx}.jpg`;
       }
       return `./img/docs/pessoa${idx}.jpg`;
+    }
+    const loc = (window.location.pathname || '').replace(/\\/g, '/');
+    if (loc.includes('/cortex-ui/')) {
+      return `/cortex-ui/img/docs/pessoa${idx}.jpg`;
     }
     return `/img/docs/pessoa${idx}.jpg`;
   }
@@ -740,7 +744,7 @@ export class CortexTreeList extends CortexElement {
                                 ? `
                                   <td>
                                     <div class="ctl-assignee-cell">
-                                      <img src="${photoUrl}" alt="${row.assigned}" class="ctl-avatar-img" onerror="this.src='${fallbackSvg}'"/>
+                                      <img src="${photoUrl}" alt="${row.assigned}" class="ctl-avatar-img" onerror="this.onerror=null; this.src='${fallbackSvg}'"/>
                                       <span style="color: var(--text-primary);">${row.assigned}</span>
                                     </div>
                                   </td>

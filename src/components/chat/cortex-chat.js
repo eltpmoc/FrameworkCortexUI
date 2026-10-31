@@ -8,20 +8,21 @@ import { CortexModal } from '../cortex-modal.js';
  * quanto com abertura direta via arquivo local (file://).
  */
 export function getChatPersonPhoto(index = 1) {
+  const idx = Math.max(1, Math.min(12, parseInt(index, 10) || 1));
   if (typeof window !== 'undefined' && window.location) {
     const loc = (window.location.pathname || '').replace(/\\/g, '/');
     if (window.location.protocol === 'file:') {
       if (loc.includes('/docs/')) {
-        return `../img/docs/pessoa${index}.jpg`;
+        return `../img/docs/pessoa${idx}.jpg`;
       }
-      return `./img/docs/pessoa${index}.jpg`;
+      return `./img/docs/pessoa${idx}.jpg`;
     }
     if (loc.includes('/cortex-ui/')) {
-      return `/cortex-ui/img/docs/pessoa${index}.jpg`;
+      return `/cortex-ui/img/docs/pessoa${idx}.jpg`;
     }
-    return `/img/docs/pessoa${index}.jpg`;
+    return `/img/docs/pessoa${idx}.jpg`;
   }
-  return `/img/docs/pessoa${index}.jpg`;
+  return `./img/docs/pessoa${idx}.jpg`;
 }
 
 // Histórico de mensagens inicial fiel à imagem de referência do usuário
@@ -333,7 +334,7 @@ export class CortexChat extends CortexElement {
               <img 
                 src="${getChatPersonPhoto(idx)}" 
                 alt="Pessoa ${idx}"
-                onerror="this.src='/cortex-ui/img/docs/pessoa${idx}.jpg'"
+                onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 48 48\'><circle cx=\'24\' cy=\'24\' r=\'24\' fill=\'%232563eb\'/><text x=\'50%\' y=\'58%\' text-anchor=\'middle\' fill=\'white\' font-size=\'16\' font-weight=\'bold\' font-family=\'sans-serif\'>${idx}</text></svg>';"
                 style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
               />
               <span style="font-size: 11px; font-weight: 600; color: var(--text-primary, #0f172a);">Pessoa ${idx}</span>
@@ -921,7 +922,7 @@ export class CortexChat extends CortexElement {
                         class="avatar-img" 
                         src="${agentPhotoSrc}" 
                         alt="${m.senderName}"
-                        onerror="if (!this.dataset.fb) { this.dataset.fb = '1'; this.src = '/cortex-ui/img/docs/pessoa1.jpg'; } else if (this.dataset.fb === '1') { this.dataset.fb = '2'; this.src = './img/docs/pessoa1.jpg'; } else { this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex'; }"
+                        onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                       />
                       <div class="initials-avatar" style="display: none;">${this._agentUser.initials}</div>
                     </div>
@@ -1013,7 +1014,7 @@ export class CortexChat extends CortexElement {
                   class="avatar-img" 
                   src="${agentPhotoSrc}" 
                   alt="Digitando..." 
-                  onerror="if (!this.dataset.fb) { this.dataset.fb = '1'; this.src = '/cortex-ui/img/docs/pessoa1.jpg'; } else { this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex'; }"
+                  onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                 />
                 <div class="initials-avatar" style="display: none;">${this._agentUser.initials}</div>
               </div>

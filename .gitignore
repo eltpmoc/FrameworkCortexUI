@@ -15,6 +15,10 @@ package-lock.json
 scratch/
 *.log
 
+# Aliases locais de imagens e rotas estáticas para desenvolvimento
+/pessoa*.jpg
+/cortex-ui/
+
 # Arquivos do Sistema Operacional
 .DS_Store
 Thumbs.db

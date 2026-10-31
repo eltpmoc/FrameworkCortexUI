@@ -462,7 +462,8 @@ export class CortexWorkspace extends CortexElement {
 
       // Ferramenta Imagem (Image)
       if (tool === 'image') {
-        this.openImageImportDialog(worldPt);
+        this._pendingImagePoint = worldPt;
+        this._interactionMode = 'pending-image';
         return;
       }
 
@@ -945,6 +946,13 @@ export class CortexWorkspace extends CortexElement {
         this._draftNode = null;
         AppState.setState({ activeTool: 'select' });
         this.engine.syncSceneState(true);
+      } else if (this._interactionMode === 'pending-image') {
+        const pt = this._pendingImagePoint;
+        this._pendingImagePoint = null;
+        this._interactionMode = null;
+        AppState.setState({ activeTool: 'select' });
+        this.openImageImportDialog(pt);
+        return;
       } else if (this._interactionMode === 'rotate-node') {
         if (this._didModifyScene) {
           this.engine.syncSceneState(true);
@@ -1025,18 +1033,76 @@ export class CortexWorkspace extends CortexElement {
 
   /**
    * Abre o diálogo de seleção de arquivo de imagem do sistema operacional (JPG, PNG, WEBP, SVG)
+   * Utiliza input fixado no DOM com garantia de transient user activation e fallback modal elegante.
    * @param {object|null} worldCoords - Coordenadas opcionais no palco para inserção
    */
   openImageImportDialog(worldCoords = null) {
-    const input = document.createElement('input');
-    input.type = 'file';
+    let input = document.getElementById('cortex-global-file-input');
+    if (!input) {
+      input = document.createElement('input');
+      input.id = 'cortex-global-file-input';
+      input.type = 'file';
+      input.style.cssText = 'position:fixed;top:-10000px;left:-10000px;opacity:0;pointer-events:none;z-index:-1;';
+      document.body.appendChild(input);
+    }
     input.accept = 'image/png,image/jpeg,image/jpg,image/webp,image/svg+xml';
-    input.addEventListener('change', () => {
+    input.value = '';
+
+    input.onchange = () => {
       const file = input.files?.[0];
       if (!file) return;
       this.importImageFile(file, worldCoords);
+      input.value = '';
+    };
+
+    try {
+      input.click();
+    } catch (err) {
+      console.warn('[CortexUI] Não foi possível disparar o seletor nativo sem user activation direta:', err);
+      this._showImageImportFallbackModal(worldCoords);
+    }
+  }
+
+  /**
+   * Modal amigável caso o navegador bloqueie input.click() por falta de user activation
+   */
+  _showImageImportFallbackModal(worldCoords = null) {
+    CortexModal.show({
+      title: 'Importar Imagem (JPG, PNG, WEBP, SVG)',
+      content: `
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 6px; text-align: center;">
+          <div style="font-size: 38px;">🖼️</div>
+          <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary, #0f172a);">
+            Importar Imagem para o Palco
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted, #64748b); max-width: 320px; line-height: 1.5;">
+            Formatos aceitos: JPG, PNG, WEBP e SVG.<br/>
+            Dica: Você também pode colar (<strong>Ctrl+V</strong>) ou arrastar um arquivo direto para o palco.
+          </div>
+          <button id="btn-modal-choose-file" style="margin-top: 6px; padding: 9px 20px; background: var(--accent-blue, #2563eb); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: filter 0.15s ease;">
+            📁 Escolher Arquivo do Computador...
+          </button>
+        </div>
+      `,
+      buttons: [
+        { label: 'Cancelar', action: 'close', type: 'secondary' }
+      ],
+      onOpen: (modalEl) => {
+        const btn = modalEl.querySelector('#btn-modal-choose-file');
+        btn?.addEventListener('click', () => {
+          CortexModal.close();
+          const input = document.getElementById('cortex-global-file-input');
+          if (input) {
+            input.onchange = () => {
+              const file = input.files?.[0];
+              if (file) this.importImageFile(file, worldCoords);
+              input.value = '';
+            };
+            input.click();
+          }
+        });
+      }
     });
-    input.click();
   }
 
   /**
